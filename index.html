@@ -89,11 +89,59 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 }
 .tracker-hdr-l { font-size: 13px; font-weight: 600; }
 .tracker-hdr-l span { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: 6px; }
+.tracker-hdr-r { display: flex; align-items: center; gap: 8px; }
+
 .reset-btn {
   font-size: 11px; color: var(--muted); background: none; border: 1px solid var(--border);
   border-radius: 8px; padding: 5px 12px; cursor: pointer; font-family: inherit; transition: all .2s;
 }
 .reset-btn:hover { color: var(--red); border-color: var(--red); }
+
+/* ── SAVE PROGRESS BUTTON ── */
+.save-btn {
+  font-size: 11px; font-weight: 700; font-family: inherit;
+  border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surf2); color: var(--muted);
+  transition: all .25s; display: flex; align-items: center; gap: 6px;
+}
+.save-btn.unsaved {
+  background: rgba(34,197,94,.15);
+  border-color: rgba(34,197,94,.5);
+  color: var(--green);
+  animation: savePulse 1.8s ease-in-out infinite;
+}
+.save-btn.unsaved:hover { background: rgba(34,197,94,.25); border-color: var(--green); }
+.save-btn.saved { background: rgba(34,197,94,.2); border-color: var(--green); color: var(--green); }
+.save-btn:disabled { opacity: .4; cursor: not-allowed; }
+@keyframes savePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,.0); }
+  50%       { box-shadow: 0 0 0 4px rgba(34,197,94,.18); }
+}
+.save-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .25s; }
+.save-btn.unsaved .save-dot { background: var(--green); }
+.save-btn.saved   .save-dot { background: var(--green); }
+
+/* ── AUTO-LOG NOTICE BANNER ── */
+.autolog-notice {
+  margin: 16px 32px 0;
+  background: rgba(167,139,250,.08);
+  border: 1px solid rgba(167,139,250,.3);
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 12px;
+  color: var(--sleep);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+.autolog-notice .notice-icon { font-size: 16px; flex-shrink: 0; }
+.autolog-notice strong { font-weight: 700; }
+#autolog-countdown { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--gold); }
 
 .tr-row {
   display: grid; grid-template-columns: 1fr 130px 48px;
@@ -201,9 +249,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .log-view .sec-title { margin-bottom: 16px; }
 
 .log-list { display: grid; gap: 12px; }
-.log-entry {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
-}
+.log-entry { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
 .log-entry-hdr {
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 18px; cursor: pointer; transition: background .15s; gap: 12px; flex-wrap: wrap;
@@ -240,6 +286,11 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
   background: rgba(167,139,250,.12); color: var(--sleep);
   border: 1px solid rgba(167,139,250,.3); border-radius: 4px; padding: 2px 6px; white-space: nowrap;
 }
+.eod-badge {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px;
+  background: rgba(245,158,11,.12); color: var(--gold);
+  border: 1px solid rgba(245,158,11,.3); border-radius: 4px; padding: 2px 6px; white-space: nowrap;
+}
 
 .log-empty {
   text-align: center; padding: 60px 24px; color: var(--muted); font-size: 14px;
@@ -262,6 +313,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 @media (max-width:700px) {
   .header, .sched-banner, .nav-tabs { padding-left: 16px; padding-right: 16px; }
   .main, .log-view { padding: 16px; }
+  .autolog-notice { margin: 12px 16px 0; }
   .tr-row { grid-template-columns: 1fr 96px 42px; gap: 8px; padding: 11px 14px; }
   .h-input { width: 50px; }
   .cards-row { grid-template-columns: 1fr 1fr; }
@@ -275,6 +327,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 }
 @media (prefers-reduced-motion:reduce) {
   .c-fg, .mini-bar-fill, .stk-seg { transition: none; }
+  .save-btn.unsaved { animation: none; }
 }
 </style>
 </head>
@@ -301,11 +354,21 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
   <button class="nav-tab"        id="ntab-totals" onclick="showPage('totals', this)">⚡ Cumulative</button>
 </div>
 
-<!-- SCHEDULE BANNER (only on today) -->
+<!-- SCHEDULE BANNER -->
 <div class="sched-banner" id="sched-banner"></div>
 
 <!-- ===== PAGE: TODAY ===== -->
 <div id="page-today">
+
+  <!-- AUTO-LOG COUNTDOWN NOTICE (hidden until there is progress) -->
+  <div class="autolog-notice" id="autolog-notice" style="display:none">
+    <span class="notice-icon">⏱</span>
+    <span>
+      <strong>Auto-log active</strong> — your progress will be automatically saved at midnight if you haven't logged yet.
+      Time until auto-log: <span id="autolog-countdown">—</span>
+    </span>
+  </div>
+
 <main class="main">
 
   <section>
@@ -313,7 +376,13 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
     <div class="tracker-card">
       <div class="tracker-hdr">
         <div class="tracker-hdr-l">Tick ✓ if fully done <span>— or enter hours completed</span></div>
-        <button class="reset-btn" onclick="resetTracker()">↺ Reset</button>
+        <div class="tracker-hdr-r">
+          <button class="save-btn" id="save-btn" onclick="saveProgress()" disabled>
+            <span class="save-dot"></span>
+            <span id="save-btn-txt">Saved</span>
+          </button>
+          <button class="reset-btn" onclick="resetTracker()">↺ Reset</button>
+        </div>
       </div>
       <div id="tr-rows"></div>
       <div class="tr-footer" id="tr-footer"></div>
@@ -419,34 +488,31 @@ const SCHED_WE = {
 /* ============================================================
    STATE
    ============================================================ */
-let curPage = 'today';
-let actState = {};   // { key: { ticked, partial } }
+let curPage  = 'today';
+let actState = {};
+let _unsaved = false;
 
 /* ============================================================
-   ALTERNATING LOGIC
-   Weekdays alternate automatically: Mon=GATE, Tue=UPSC, Wed=GATE, Thu=UPSC, Fri=GATE
-   (Mon=1,Tue=2,Wed=3,Thu=4,Fri=5 → odd=GATE, even=UPSC)
+   SCHEDULE HELPERS
    ============================================================ */
 function isWeekend(d) {
   const day = (d || new Date()).getDay();
   return day === 0 || day === 6;
 }
-
 function scheduleForDate(d) {
   const date = d || new Date();
   if (isWeekend(date)) return SCHED_WE;
-  const dow = date.getDay(); // 1=Mon…5=Fri
+  const dow = date.getDay();
   return (dow % 2 === 1) ? SCHED_WD_GATE : SCHED_WD_UPSC;
 }
-
 function currentSched() { return scheduleForDate(new Date()); }
 
 /* ============================================================
-   PERSISTENCE — localStorage keys
+   PERSISTENCE
    ============================================================ */
 const LS_CUM   = 'scc_v5_cum';
 const LS_LOGS  = 'scc_v5_logs';
-const LS_STATE = 'scc_v5_state'; // { date: 'YYYY-MM-DD', actState: {...} }
+const LS_STATE = 'scc_v5_state';
 
 function loadCum() {
   try { const r = localStorage.getItem(LS_CUM); if(r) return JSON.parse(r); } catch(e){}
@@ -454,7 +520,6 @@ function loadCum() {
 }
 function saveCum(c) { try { localStorage.setItem(LS_CUM, JSON.stringify(c)); } catch(e){} }
 
-// logs: array of { dateKey, dateLabel, schedId, schedLabel, entries:[{key,name,planned,done,ticked}], totals:{upsc,gate,iiit,prod}, note }
 function loadLogs() {
   try { const r = localStorage.getItem(LS_LOGS); if(r) return JSON.parse(r); } catch(e){}
   return [];
@@ -462,21 +527,82 @@ function loadLogs() {
 function saveLogs(logs) { try { localStorage.setItem(LS_LOGS, JSON.stringify(logs)); } catch(e){} }
 
 function todayKey() { return new Date().toISOString().slice(0,10); }
+
 function saveState() {
-  try { localStorage.setItem(LS_STATE, JSON.stringify({ date: todayKey(), actState })); } catch(e){}
+  try {
+    localStorage.setItem(LS_STATE, JSON.stringify({ date: todayKey(), actState }));
+  } catch(e){}
 }
 function loadState() {
-  // Returns { actState, date } or null
-  try {
-    const r = localStorage.getItem(LS_STATE);
-    if (!r) return null;
-    return JSON.parse(r);   // caller decides what to do with stale dates
-  } catch(e){}
+  try { const r = localStorage.getItem(LS_STATE); if (!r) return null; return JSON.parse(r); } catch(e){}
   return null;
 }
 
 let cumData = loadCum();
 let dayLogs = loadLogs();
+
+/* ============================================================
+   SAVE PROGRESS BUTTON STATE
+   ============================================================ */
+function markUnsaved() {
+  _unsaved = true;
+  const btn = document.getElementById('save-btn');
+  if (!btn) return;
+  btn.classList.add('unsaved');
+  btn.classList.remove('saved');
+  btn.disabled = false;
+  document.getElementById('save-btn-txt').textContent = 'Save Progress';
+  updateAutologNotice();
+}
+function markSaved() {
+  _unsaved = false;
+  const btn = document.getElementById('save-btn');
+  if (!btn) return;
+  btn.classList.remove('unsaved');
+  btn.classList.add('saved');
+  btn.disabled = false;
+  document.getElementById('save-btn-txt').textContent = 'Saved ✓';
+  setTimeout(() => {
+    btn.classList.remove('saved');
+    btn.disabled = true;
+    document.getElementById('save-btn-txt').textContent = 'Saved';
+  }, 2200);
+}
+function saveProgress() {
+  saveState();
+  markSaved();
+  showToast('Progress saved ✓');
+}
+
+/* ============================================================
+   AUTO-LOG NOTICE + COUNTDOWN
+   ============================================================ */
+function hasAnyProgress() {
+  return Object.values(actState).some(s => s.ticked || (s.partial !== null && s.partial > 0));
+}
+
+function updateAutologNotice() {
+  const notice = document.getElementById('autolog-notice');
+  const cd     = document.getElementById('autolog-countdown');
+  if (!notice || !cd) return;
+
+  const alreadyLogged = !!dayLogs.find(l => l.dateKey === todayKey());
+  if (alreadyLogged || !hasAnyProgress()) {
+    notice.style.display = 'none';
+    return;
+  }
+  notice.style.display = 'flex';
+
+  // Compute time until midnight
+  const now       = new Date();
+  const midnight  = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  const diffMs    = midnight - now;
+  const diffH     = Math.floor(diffMs / 3600000);
+  const diffM     = Math.floor((diffMs % 3600000) / 60000);
+  const diffS     = Math.floor((diffMs % 60000) / 1000);
+  cd.textContent  = `${String(diffH).padStart(2,'0')}:${String(diffM).padStart(2,'0')}:${String(diffS).padStart(2,'0')}`;
+}
 
 /* ============================================================
    STATE HELPERS
@@ -500,37 +626,46 @@ function getDone(row) {
 function toggleTick(key) {
   actState[key].ticked = !actState[key].ticked;
   if (actState[key].ticked) actState[key].partial = null;
+  // Ticks save immediately — no pending unsaved state
   saveState();
+  markSaved();
   renderToday();
 }
 function onPartial(key, val) {
   const p = parseFloat(val);
   actState[key].partial = isNaN(p) ? null : Math.max(0, p);
   if (!isNaN(p) && p > 0) actState[key].ticked = false;
-  saveState();
+  markUnsaved();
   renderToday();
 }
 function resetTracker() {
   actState = {};
   initState();
   try { localStorage.removeItem(LS_STATE); } catch(e){}
+  _unsaved = false;
+  const btn = document.getElementById('save-btn');
+  if (btn) {
+    btn.classList.remove('unsaved','saved');
+    btn.disabled = true;
+    document.getElementById('save-btn-txt').textContent = 'Saved';
+  }
+  updateAutologNotice();
   renderToday();
   showToast('Tracker reset');
 }
 
 /* ============================================================
-   LOG TODAY
+   COMMIT LOG
+   Core function — logs a specific saved state for a specific date.
+   autoReason: falsy = manual, 'midnight' = midnight rollover,
+               'eod' = end-of-day timer fired, 'stale' = next-day open
    ============================================================ */
-/* ── Core log function — logs a specific savedState for a specific dateStr ── */
-function _commitLog(dateStr, savedActState, silent) {
-  // dateStr: 'YYYY-MM-DD', savedActState: the actState object for that day
-  if (dayLogs.find(l => l.dateKey === dateStr)) return; // already logged
+function _commitLog(dateStr, savedActState, autoReason) {
+  if (dayLogs.find(l => l.dateKey === dateStr)) return;
 
-  // Build a temporary state context to compute getDone for that date
-  const logDate  = new Date(dateStr + 'T12:00:00');
-  const sched    = scheduleForDate(logDate);
+  const logDate = new Date(dateStr + 'T12:00:00');
+  const sched   = scheduleForDate(logDate);
 
-  // getDoneFor: compute done hours using a given state snapshot
   function doneFor(row, snap) {
     const s = snap[row.key];
     if (!s) return 0;
@@ -539,12 +674,14 @@ function _commitLog(dateStr, savedActState, silent) {
     return 0;
   }
 
-  const entries = sched.rows.filter(r => r.productive && r.hours > 0).map(r => ({
-    key: r.key, name: r.name, color: r.color,
-    planned: r.hours,
-    done: doneFor(r, savedActState),
-    ticked: savedActState[r.key]?.ticked || false
-  }));
+  const entries = sched.rows
+    .filter(r => r.productive && r.hours > 0)
+    .map(r => ({
+      key: r.key, name: r.name, color: r.color,
+      planned: r.hours,
+      done: doneFor(r, savedActState),
+      ticked: savedActState[r.key]?.ticked || false
+    }));
 
   let upscH = 0, gateH = 0, iiitH = 0;
   entries.forEach(e => {
@@ -554,14 +691,17 @@ function _commitLog(dateStr, savedActState, silent) {
   });
   const prodH = upscH + gateH + iiitH;
 
-  const days_   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months_ = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const dateLabel = `${days_[logDate.getDay()]}, ${logDate.getDate()} ${months_[logDate.getMonth()]} ${logDate.getFullYear()}`;
+  const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dateLabel = `${DAYS[logDate.getDay()]}, ${logDate.getDate()} ${MONTHS[logDate.getMonth()]} ${logDate.getFullYear()}`;
 
   dayLogs.unshift({
-    dateKey: dateStr, dateLabel, schedId: sched.id, schedLabel: sched.label,
-    entries, totals: { upsc:upscH, gate:gateH, iiit:iiitH, prod:prodH },
-    autoLogged: silent || false
+    dateKey: dateStr, dateLabel,
+    schedId: sched.id, schedLabel: sched.label,
+    entries,
+    totals: { upsc:upscH, gate:gateH, iiit:iiitH, prod:prodH },
+    autoLogged: !!autoReason,
+    autoReason: autoReason || null
   });
   saveLogs(dayLogs);
 
@@ -573,26 +713,47 @@ function _commitLog(dateStr, savedActState, silent) {
   saveCum(cumData);
 }
 
+/* ============================================================
+   LOG TODAY (manual)
+   ============================================================ */
 function logToday() {
   const dateKey = todayKey();
   if (dayLogs.find(l => l.dateKey === dateKey)) {
     showToast('Today already logged — delete it first to re-log');
     return;
   }
-  _commitLog(dateKey, actState, false);
-  // Reset tracker
+  _commitLog(dateKey, actState, null);
   actState = {}; initState();
   try { localStorage.removeItem(LS_STATE); } catch(e){}
+  _unsaved = false;
+  const btn = document.getElementById('save-btn');
+  if (btn) { btn.classList.remove('unsaved','saved'); btn.disabled = true; document.getElementById('save-btn-txt').textContent = 'Saved'; }
   renderAll();
   const prod = dayLogs[0]?.totals?.prod || 0;
   showToast(`Day logged ✓  —  ${prod.toFixed(1)}h productive`);
 }
 
+/* ============================================================
+   AUTO-LOG HELPER
+   Checks if a given date needs auto-logging and does it.
+   Returns true if it logged something.
+   ============================================================ */
+function autoLogIfNeeded(dateStr, snap, reason) {
+  if (!dateStr) return false;
+  if (dayLogs.find(l => l.dateKey === dateStr)) return false;
+  const hadProgress = Object.values(snap).some(s => s.ticked || (s.partial !== null && s.partial > 0));
+  if (!hadProgress) return false;
+  _commitLog(dateStr, snap, reason);
+  return true;
+}
+
+/* ============================================================
+   DELETE LOG
+   ============================================================ */
 function deleteLog(dateKey) {
   const idx = dayLogs.findIndex(l => l.dateKey === dateKey);
   if (idx === -1) return;
   const log = dayLogs[idx];
-  // Subtract from cumulative
   cumData.upsc      -= log.totals.upsc;
   cumData.gate      -= log.totals.gate;
   cumData.iiit      -= log.totals.iiit;
@@ -624,10 +785,13 @@ function showPage(page, btn) {
 /* ============================================================
    TOAST
    ============================================================ */
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+function showToast(msg, color) {
+  const t   = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = color || 'var(--green)';
+  t.style.color       = color || 'var(--green)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
 }
 
 /* ============================================================
@@ -651,10 +815,9 @@ function renderSchedBanner() {
   const sched = currentSched();
   const dow   = new Date().getDay();
   const isWE  = isWeekend();
-
   let eveInfo = '';
   if (!isWE) {
-    const eveType = (dow % 2 === 1) ? 'GATE' : 'UPSC';
+    const eveType  = (dow % 2 === 1) ? 'GATE' : 'UPSC';
     const eveColor = eveType === 'GATE' ? 'var(--gate)' : 'var(--upsc)';
     const nextDow  = dow === 5 ? null : dow + 1;
     const nextEve  = nextDow ? ((nextDow % 2 === 1) ? 'GATE' : 'UPSC') : 'Weekend';
@@ -670,7 +833,6 @@ function renderSchedBanner() {
         🔒 GATE 3h fixed &nbsp;·&nbsp; <span style="color:var(--muted)">Rest = UPSC</span>
       </div>`;
   }
-
   document.getElementById('sched-banner').innerHTML = `
     <div class="sched-pill">
       <div class="pdot" style="background:${isWE ? 'var(--upsc)' : 'var(--iiit)'}"></div>
@@ -690,8 +852,7 @@ function renderSchedBanner() {
    ============================================================ */
 function renderTrackerRows() {
   const sched = currentSched();
-
-  const html = sched.rows.map(row => {
+  const html  = sched.rows.map(row => {
     const s      = actState[row.key] || { ticked:false, partial:null };
     const done   = getDone(row);
     const pct    = row.hours > 0 ? Math.min(100, Math.round((done/row.hours)*100)) : 0;
@@ -699,15 +860,12 @@ function renderTrackerRows() {
     const isPart = !isTick && done > 0;
     const cls    = isTick ? 'done' : isPart ? 'partial' : '';
     const mCls   = row.mandatory ? 'mand' : '';
-
-    let stxt  = row.hours > 0 ? `Planned: ${row.hours}h` : 'Not scheduled today';
-    let sclr  = 'var(--muted)';
-    if (isTick)  { stxt = '✓ Fully completed';                    sclr = 'var(--green)'; }
-    else if (isPart) { stxt = `${done}h of ${row.hours}h done`;   sclr = 'var(--gold)'; }
-
+    let stxt = row.hours > 0 ? `Planned: ${row.hours}h` : 'Not scheduled today';
+    let sclr = 'var(--muted)';
+    if (isTick)      { stxt = '✓ Fully completed';               sclr = 'var(--green)'; }
+    else if (isPart) { stxt = `${done}h of ${row.hours}h done`;  sclr = 'var(--gold)'; }
     const disabled = isTick || row.hours === 0;
     const inpVal   = s.partial !== null ? s.partial : '';
-
     return `
     <div class="tr-row ${cls} ${mCls}">
       <div class="act-info">
@@ -733,15 +891,12 @@ function renderTrackerRows() {
       </button>
     </div>`;
   }).join('');
-
   document.getElementById('tr-rows').innerHTML = html;
 
-  // Footer
   const prodDone  = sched.rows.filter(r=>r.productive).reduce((s,r)=>s+getDone(r), 0);
   const tickCount = sched.rows.filter(r=>actState[r.key]?.ticked).length;
   const total     = sched.rows.length;
   const pctProd   = sched.totalProd > 0 ? Math.min(100,Math.round((prodDone/sched.totalProd)*100)) : 0;
-
   document.getElementById('tr-footer').innerHTML = `
     <div class="ftr-stat">
       <div class="ftr-lbl">Ticked Off</div>
@@ -796,19 +951,15 @@ function renderCircles() {
     { key:'upsc2', label:'UPSC Evening', color:'var(--upsc)' },
     { key:'gate',  label:'GATE',         color:'var(--gate)' },
     { key:'iiit',  label:'IIIT',         color:'var(--iiit)' },
-  ].filter(s => {
-    const row = sched.rows.find(r=>r.key===s.key);
-    return row && row.hours > 0;
-  });
+  ].filter(s => { const row = sched.rows.find(r=>r.key===s.key); return row && row.hours > 0; });
 
   const prodDone = sched.rows.filter(r=>r.productive).reduce((s,r)=>s+getDone(r), 0);
   const totalPct = Math.min(100,Math.round((prodDone/sched.totalProd)*100));
-
   const html = subjects.map(s => {
-    const row   = sched.rows.find(r=>r.key===s.key);
-    const done  = getDone(row);
-    const pct   = Math.min(100,Math.round((done/row.hours)*100));
-    const tick  = actState[s.key]?.ticked;
+    const row  = sched.rows.find(r=>r.key===s.key);
+    const done = getDone(row);
+    const pct  = Math.min(100,Math.round((done/row.hours)*100));
+    const tick = actState[s.key]?.ticked;
     return `
     <div class="circle-card">
       <div class="circle-wrap">
@@ -819,7 +970,6 @@ function renderCircles() {
       ${tick ? '<div class="c-tick">✓ Done</div>' : `<div class="c-hrs">${done}h / ${row.hours}h</div>`}
     </div>`;
   }).join('');
-
   const overall = `
   <div class="circle-card">
     <div class="circle-wrap">
@@ -829,7 +979,6 @@ function renderCircles() {
     <div class="c-name" style="color:var(--gold)">Overall</div>
     <div class="c-hrs">${prodDone.toFixed(1)}h / ${sched.totalProd}h</div>
   </div>`;
-
   document.getElementById('circles-row').innerHTML = html + overall;
 }
 
@@ -868,11 +1017,8 @@ function renderLogs() {
     container.innerHTML = `<div class="log-empty"><span>📭</span>No days logged yet.<br>Complete today's tracker and hit "Log Day" to save your first entry.</div>`;
     return;
   }
-
   container.innerHTML = dayLogs.map(log => {
-    const { dateKey, dateLabel, schedLabel, entries, totals } = log;
-    const pct = totals.prod > 0 ? Math.round((totals.prod / (currentSched().totalProd || 19)) * 100) : 0;
-
+    const { dateKey, dateLabel, schedLabel, entries, totals, autoLogged, autoReason } = log;
     const pills = [
       totals.upsc > 0 ? `<span class="log-pill" style="color:var(--upsc);border-color:rgba(108,143,255,.35);background:rgba(108,143,255,.08)">${totals.upsc.toFixed(1)}h UPSC</span>` : '',
       totals.gate > 0 ? `<span class="log-pill" style="color:var(--gate);border-color:rgba(255,124,92,.35);background:rgba(255,124,92,.08)">${totals.gate.toFixed(1)}h GATE</span>` : '',
@@ -880,29 +1026,22 @@ function renderLogs() {
       `<span class="log-pill" style="color:var(--gold);border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.08)">${totals.prod.toFixed(1)}h total</span>`,
     ].filter(Boolean).join('');
 
-    const detail_stats = `
-      <div class="log-stat">
-        <div class="log-stat-lbl">UPSC</div>
-        <div class="log-stat-val" style="color:var(--upsc)">${totals.upsc.toFixed(1)}h</div>
-        <div class="log-stat-sub">hours completed</div>
-      </div>
-      <div class="log-stat">
-        <div class="log-stat-lbl">GATE</div>
-        <div class="log-stat-val" style="color:var(--gate)">${totals.gate.toFixed(1)}h</div>
-        <div class="log-stat-sub">hours completed</div>
-      </div>
-      <div class="log-stat">
-        <div class="log-stat-lbl">IIIT</div>
-        <div class="log-stat-val" style="color:var(--iiit)">${totals.iiit.toFixed(1)}h</div>
-        <div class="log-stat-sub">hours completed</div>
-      </div>
-      <div class="log-stat">
-        <div class="log-stat-lbl">Total Productive</div>
-        <div class="log-stat-val" style="color:var(--gold)">${totals.prod.toFixed(1)}h</div>
-        <div class="log-stat-sub">schedule: ${schedLabel}</div>
-      </div>`;
+    let autoBadge = '';
+    if (autoLogged) {
+      if (autoReason === 'eod') {
+        autoBadge = '<span class="eod-badge">⏱ end-of-day auto</span>';
+      } else {
+        autoBadge = '<span class="auto-badge">⚡ auto-logged</span>';
+      }
+    }
 
-    const detail_entries = entries.map(e => `
+    const detail_stats = `
+      <div class="log-stat"><div class="log-stat-lbl">UPSC</div><div class="log-stat-val" style="color:var(--upsc)">${totals.upsc.toFixed(1)}h</div><div class="log-stat-sub">hours completed</div></div>
+      <div class="log-stat"><div class="log-stat-lbl">GATE</div><div class="log-stat-val" style="color:var(--gate)">${totals.gate.toFixed(1)}h</div><div class="log-stat-sub">hours completed</div></div>
+      <div class="log-stat"><div class="log-stat-lbl">IIIT</div><div class="log-stat-val" style="color:var(--iiit)">${totals.iiit.toFixed(1)}h</div><div class="log-stat-sub">hours completed</div></div>
+      <div class="log-stat"><div class="log-stat-lbl">Total Productive</div><div class="log-stat-val" style="color:var(--gold)">${totals.prod.toFixed(1)}h</div><div class="log-stat-sub">schedule: ${schedLabel}</div></div>`;
+
+    const detail_entries = (entries || []).map(e => `
       <div class="log-stat">
         <div class="log-stat-lbl" style="color:${e.color}">${e.name}</div>
         <div class="log-stat-val">${e.done.toFixed(1)}<span style="font-size:13px;color:var(--muted)">/${e.planned}h</span></div>
@@ -913,7 +1052,7 @@ function renderLogs() {
     <div class="log-entry">
       <div class="log-entry-hdr" onclick="toggleLogEntry('${dateKey}')">
         <div>
-          <div class="log-date">${dateLabel}<span>${schedLabel}</span>${log.autoLogged ? ' <span class=\'auto-badge\'>⚡ auto-logged</span>' : ''}</div>
+          <div class="log-date">${dateLabel}<span>${schedLabel}</span> ${autoBadge}</div>
         </div>
         <div class="log-pills">${pills}</div>
         <div class="log-chevron" id="chv-${dateKey}">▼</div>
@@ -935,42 +1074,12 @@ function renderLogs() {
 function renderCumulative() {
   const d = Math.max(cumData.days, 1);
   document.getElementById('cum-grid').innerHTML = `
-    <div class="cum-card">
-      <div class="cum-icon">📅</div>
-      <div class="cum-lbl">Days Tracked</div>
-      <div class="cum-val" style="color:var(--gold)">${cumData.days}</div>
-      <div class="cum-sub">Since 18 Jun 2026</div>
-    </div>
-    <div class="cum-card">
-      <div class="cum-icon">📖</div>
-      <div class="cum-lbl">Total UPSC Hours</div>
-      <div class="cum-val" style="color:var(--upsc)">${cumData.upsc.toFixed(1)}h</div>
-      <div class="cum-sub">Avg ${(cumData.upsc/d).toFixed(1)}h/day</div>
-    </div>
-    <div class="cum-card">
-      <div class="cum-icon">🔧</div>
-      <div class="cum-lbl">Total GATE Hours</div>
-      <div class="cum-val" style="color:var(--gate)">${cumData.gate.toFixed(1)}h</div>
-      <div class="cum-sub">Avg ${(cumData.gate/d).toFixed(1)}h/day</div>
-    </div>
-    <div class="cum-card">
-      <div class="cum-icon">🏫</div>
-      <div class="cum-lbl">IIIT Fellowship</div>
-      <div class="cum-val" style="color:var(--iiit)">${cumData.iiit.toFixed(1)}h</div>
-      <div class="cum-sub">Avg ${(cumData.iiit/d).toFixed(1)}h/day</div>
-    </div>
-    <div class="cum-card">
-      <div class="cum-icon">⚡</div>
-      <div class="cum-lbl">Total Productive</div>
-      <div class="cum-val" style="color:var(--gold)">${cumData.totalProd.toFixed(1)}h</div>
-      <div class="cum-sub">Avg ${(cumData.totalProd/d).toFixed(1)}h/day</div>
-    </div>
-    <div class="cum-card">
-      <div class="cum-icon">📊</div>
-      <div class="cum-lbl">UPSC vs GATE Split</div>
-      <div class="cum-val" style="color:var(--text);font-size:18px">${cumData.totalProd > 0 ? Math.round((cumData.upsc/cumData.totalProd)*100) : 0}% / ${cumData.totalProd > 0 ? Math.round((cumData.gate/cumData.totalProd)*100) : 0}%</div>
-      <div class="cum-sub">UPSC / GATE of productive time</div>
-    </div>`;
+    <div class="cum-card"><div class="cum-icon">📅</div><div class="cum-lbl">Days Tracked</div><div class="cum-val" style="color:var(--gold)">${cumData.days}</div><div class="cum-sub">Since 18 Jun 2026</div></div>
+    <div class="cum-card"><div class="cum-icon">📖</div><div class="cum-lbl">Total UPSC Hours</div><div class="cum-val" style="color:var(--upsc)">${cumData.upsc.toFixed(1)}h</div><div class="cum-sub">Avg ${(cumData.upsc/d).toFixed(1)}h/day</div></div>
+    <div class="cum-card"><div class="cum-icon">🔧</div><div class="cum-lbl">Total GATE Hours</div><div class="cum-val" style="color:var(--gate)">${cumData.gate.toFixed(1)}h</div><div class="cum-sub">Avg ${(cumData.gate/d).toFixed(1)}h/day</div></div>
+    <div class="cum-card"><div class="cum-icon">🏫</div><div class="cum-lbl">IIIT Fellowship</div><div class="cum-val" style="color:var(--iiit)">${cumData.iiit.toFixed(1)}h</div><div class="cum-sub">Avg ${(cumData.iiit/d).toFixed(1)}h/day</div></div>
+    <div class="cum-card"><div class="cum-icon">⚡</div><div class="cum-lbl">Total Productive</div><div class="cum-val" style="color:var(--gold)">${cumData.totalProd.toFixed(1)}h</div><div class="cum-sub">Avg ${(cumData.totalProd/d).toFixed(1)}h/day</div></div>
+    <div class="cum-card"><div class="cum-icon">📊</div><div class="cum-lbl">UPSC vs GATE Split</div><div class="cum-val" style="color:var(--text);font-size:18px">${cumData.totalProd > 0 ? Math.round((cumData.upsc/cumData.totalProd)*100) : 0}% / ${cumData.totalProd > 0 ? Math.round((cumData.gate/cumData.totalProd)*100) : 0}%</div><div class="cum-sub">UPSC / GATE of productive time</div></div>`;
 }
 
 /* ============================================================
@@ -982,6 +1091,7 @@ function renderToday() {
   renderGlance();
   renderCircles();
   renderBar();
+  updateAutologNotice();
 }
 function renderAll() {
   renderDateHeader();
@@ -998,16 +1108,14 @@ function renderAll() {
 
   if (saved) {
     if (saved.date === todayKey()) {
-      // Same day — restore ticks/partials
+      // Same day — restore ticks / partials
       initState(saved.actState);
     } else {
-      // New day — auto-log the previous day if it wasn't logged and had any progress
-      const hadProgress = Object.values(saved.actState).some(s => s.ticked || s.partial > 0);
-      if (hadProgress && !dayLogs.find(l => l.dateKey === saved.date)) {
-        _commitLog(saved.date, saved.actState, true); // silent auto-log
-        showToast(`Auto-logged ${saved.date} — you forgot to log yesterday ✓`);
+      // New day opened — auto-log previous day if there was progress
+      const logged = autoLogIfNeeded(saved.date, saved.actState, 'stale');
+      if (logged) {
+        showToast(`Auto-logged ${saved.date} — opened on a new day ✓`);
       }
-      // Clear stale state, start fresh today
       try { localStorage.removeItem(LS_STATE); } catch(e){}
       initState();
     }
@@ -1017,29 +1125,76 @@ function renderAll() {
 
   renderAll();
 
-  // ── Midnight rollover check: fires every minute, auto-logs if day changed ──
+  /* ── SECOND-RESOLUTION CLOCK ── */
+  // Updates countdown every second; checks for day rollover every minute.
   let _lastDateKey = todayKey();
+  let _tickCount   = 0;
+
   setInterval(() => {
-    renderDateHeader();
-    renderSchedBanner();
+    _tickCount++;
+
+    // Always update countdown display
+    updateAutologNotice();
+
+    // Every 60 ticks (~60s): full date-change check + possible EOD auto-log
+    if (_tickCount % 60 === 0) {
+      renderDateHeader();
+      renderSchedBanner();
+
+      const nowKey = todayKey();
+
+      // ── Day rollover at midnight ──
+      if (nowKey !== _lastDateKey) {
+        // Auto-log yesterday via midnight rollover
+        const logged = autoLogIfNeeded(_lastDateKey, { ...actState }, 'midnight');
+        if (logged) {
+          showToast(`Midnight — auto-logged ${_lastDateKey} ✓`, 'var(--sleep)');
+        }
+        actState = {}; initState();
+        try { localStorage.removeItem(LS_STATE); } catch(e){}
+        _lastDateKey = nowKey;
+        renderAll();
+        return;
+      }
+
+      // ── End-of-day timer (23:55) — fire 5 minutes before midnight ──
+      // This catches users who have the tab open but won't be around at midnight.
+      const now = new Date();
+      if (now.getHours() === 23 && now.getMinutes() === 55) {
+        const logged = autoLogIfNeeded(_lastDateKey, { ...actState }, 'eod');
+        if (logged) {
+          // Keep the tracker running (don't clear state) — midnight will handle the reset
+          showToast('⏱ 5 min to midnight — progress auto-saved ✓', 'var(--gold)');
+          renderAll();
+        }
+      }
+    }
+  }, 1000);
+
+  /* ── VISIBILITY / FOCUS: catch tab re-opens on a new day ──
+     If the user leaves the tab open overnight, or wakes up their laptop,
+     visibilitychange fires before any interval tick. */
+  function checkDateOnFocus() {
     const nowKey = todayKey();
     if (nowKey !== _lastDateKey) {
-      // Day just rolled over — auto-log previous day if not already logged and had progress
-      const hadProgress = Object.values(actState).some(s => s.ticked || (s.partial !== null && s.partial > 0));
-      if (hadProgress && !dayLogs.find(l => l.dateKey === _lastDateKey)) {
-        _commitLog(_lastDateKey, { ...actState }, true);
-        showToast(`Midnight — auto-logged ${_lastDateKey} ✓`);
+      // Auto-log the missed day
+      const logged = autoLogIfNeeded(_lastDateKey, { ...actState }, 'stale');
+      if (logged) {
+        showToast(`Auto-logged ${_lastDateKey} — welcome back ✓`, 'var(--sleep)');
       }
-      // Clear and start fresh
       actState = {}; initState();
       try { localStorage.removeItem(LS_STATE); } catch(e){}
       _lastDateKey = nowKey;
       renderAll();
     }
-  }, 60000);
+  }
 
-  // ── Page-hide fallback: save state when user navigates away / closes tab ──
-  // (already handled by saveState() on every tick, but belt-and-suspenders)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkDateOnFocus();
+  });
+  window.addEventListener('focus', checkDateOnFocus);
+
+  /* ── Save state on page hide (belt-and-suspenders) ── */
   window.addEventListener('pagehide', () => { saveState(); });
   window.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') saveState();
