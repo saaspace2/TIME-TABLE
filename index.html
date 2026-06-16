@@ -235,6 +235,11 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
   margin-top: 10px;
 }
 .log-del-btn:hover { color: var(--red); border-color: var(--red); }
+.auto-badge {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px;
+  background: rgba(167,139,250,.12); color: var(--sleep);
+  border: 1px solid rgba(167,139,250,.3); border-radius: 4px; padding: 2px 6px; white-space: nowrap;
+}
 
 .log-empty {
   text-align: center; padding: 60px 24px; color: var(--muted); font-size: 14px;
@@ -461,12 +466,11 @@ function saveState() {
   try { localStorage.setItem(LS_STATE, JSON.stringify({ date: todayKey(), actState })); } catch(e){}
 }
 function loadState() {
+  // Returns { actState, date } or null
   try {
     const r = localStorage.getItem(LS_STATE);
     if (!r) return null;
-    const parsed = JSON.parse(r);
-    if (parsed.date === todayKey()) return parsed.actState;
-    localStorage.removeItem(LS_STATE); // stale — different day, wipe it
+    return JSON.parse(r);   // caller decides what to do with stale dates
   } catch(e){}
   return null;
 }
@@ -517,20 +521,29 @@ function resetTracker() {
 /* ============================================================
    LOG TODAY
    ============================================================ */
-function logToday() {
-  const sched = currentSched();
-  const now   = new Date();
-  const dateKey = now.toISOString().slice(0,10);
+/* ── Core log function — logs a specific savedState for a specific dateStr ── */
+function _commitLog(dateStr, savedActState, silent) {
+  // dateStr: 'YYYY-MM-DD', savedActState: the actState object for that day
+  if (dayLogs.find(l => l.dateKey === dateStr)) return; // already logged
 
-  // Check not already logged today
-  if (dayLogs.find(l => l.dateKey === dateKey)) {
-    showToast('Today already logged — delete it first to re-log');
-    return;
+  // Build a temporary state context to compute getDone for that date
+  const logDate  = new Date(dateStr + 'T12:00:00');
+  const sched    = scheduleForDate(logDate);
+
+  // getDoneFor: compute done hours using a given state snapshot
+  function doneFor(row, snap) {
+    const s = snap[row.key];
+    if (!s) return 0;
+    if (s.ticked) return row.hours;
+    if (s.partial !== null) return Math.min(s.partial, row.hours);
+    return 0;
   }
 
   const entries = sched.rows.filter(r => r.productive && r.hours > 0).map(r => ({
     key: r.key, name: r.name, color: r.color,
-    planned: r.hours, done: getDone(r), ticked: actState[r.key]?.ticked || false
+    planned: r.hours,
+    done: doneFor(r, savedActState),
+    ticked: savedActState[r.key]?.ticked || false
   }));
 
   let upscH = 0, gateH = 0, iiitH = 0;
@@ -541,29 +554,38 @@ function logToday() {
   });
   const prodH = upscH + gateH + iiitH;
 
-  const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const dateLabel = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const days_   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months_ = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dateLabel = `${days_[logDate.getDay()]}, ${logDate.getDate()} ${months_[logDate.getMonth()]} ${logDate.getFullYear()}`;
 
   dayLogs.unshift({
-    dateKey, dateLabel, schedId: sched.id, schedLabel: sched.label,
-    entries, totals: { upsc:upscH, gate:gateH, iiit:iiitH, prod:prodH }
+    dateKey: dateStr, dateLabel, schedId: sched.id, schedLabel: sched.label,
+    entries, totals: { upsc:upscH, gate:gateH, iiit:iiitH, prod:prodH },
+    autoLogged: silent || false
   });
   saveLogs(dayLogs);
 
-  // Update cumulative
   cumData.upsc      += upscH;
   cumData.gate      += gateH;
   cumData.iiit      += iiitH;
   cumData.totalProd += prodH;
   cumData.days      += 1;
   saveCum(cumData);
+}
 
+function logToday() {
+  const dateKey = todayKey();
+  if (dayLogs.find(l => l.dateKey === dateKey)) {
+    showToast('Today already logged — delete it first to re-log');
+    return;
+  }
+  _commitLog(dateKey, actState, false);
   // Reset tracker
   actState = {}; initState();
   try { localStorage.removeItem(LS_STATE); } catch(e){}
   renderAll();
-  showToast(`Day logged ✓  —  ${prodH.toFixed(1)}h productive`);
+  const prod = dayLogs[0]?.totals?.prod || 0;
+  showToast(`Day logged ✓  —  ${prod.toFixed(1)}h productive`);
 }
 
 function deleteLog(dateKey) {
@@ -891,7 +913,7 @@ function renderLogs() {
     <div class="log-entry">
       <div class="log-entry-hdr" onclick="toggleLogEntry('${dateKey}')">
         <div>
-          <div class="log-date">${dateLabel}<span>${schedLabel}</span></div>
+          <div class="log-date">${dateLabel}<span>${schedLabel}</span>${log.autoLogged ? ' <span class=\'auto-badge\'>⚡ auto-logged</span>' : ''}</div>
         </div>
         <div class="log-pills">${pills}</div>
         <div class="log-chevron" id="chv-${dateKey}">▼</div>
@@ -972,11 +994,56 @@ function renderAll() {
    INIT
    ============================================================ */
 (function init() {
-  const saved = loadState();
-  initState(saved); // restores today's ticks/partials if same day, else fresh
+  const saved = loadState();  // { date, actState } or null
+
+  if (saved) {
+    if (saved.date === todayKey()) {
+      // Same day — restore ticks/partials
+      initState(saved.actState);
+    } else {
+      // New day — auto-log the previous day if it wasn't logged and had any progress
+      const hadProgress = Object.values(saved.actState).some(s => s.ticked || s.partial > 0);
+      if (hadProgress && !dayLogs.find(l => l.dateKey === saved.date)) {
+        _commitLog(saved.date, saved.actState, true); // silent auto-log
+        showToast(`Auto-logged ${saved.date} — you forgot to log yesterday ✓`);
+      }
+      // Clear stale state, start fresh today
+      try { localStorage.removeItem(LS_STATE); } catch(e){}
+      initState();
+    }
+  } else {
+    initState();
+  }
+
   renderAll();
-  // Auto-refresh date/banner each minute
-  setInterval(() => { renderDateHeader(); renderSchedBanner(); }, 60000);
+
+  // ── Midnight rollover check: fires every minute, auto-logs if day changed ──
+  let _lastDateKey = todayKey();
+  setInterval(() => {
+    renderDateHeader();
+    renderSchedBanner();
+    const nowKey = todayKey();
+    if (nowKey !== _lastDateKey) {
+      // Day just rolled over — auto-log previous day if not already logged and had progress
+      const hadProgress = Object.values(actState).some(s => s.ticked || (s.partial !== null && s.partial > 0));
+      if (hadProgress && !dayLogs.find(l => l.dateKey === _lastDateKey)) {
+        _commitLog(_lastDateKey, { ...actState }, true);
+        showToast(`Midnight — auto-logged ${_lastDateKey} ✓`);
+      }
+      // Clear and start fresh
+      actState = {}; initState();
+      try { localStorage.removeItem(LS_STATE); } catch(e){}
+      _lastDateKey = nowKey;
+      renderAll();
+    }
+  }, 60000);
+
+  // ── Page-hide fallback: save state when user navigates away / closes tab ──
+  // (already handled by saveState() on every tick, but belt-and-suspenders)
+  window.addEventListener('pagehide', () => { saveState(); });
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') saveState();
+  });
 })();
 </script>
 </body>
