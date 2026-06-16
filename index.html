@@ -48,7 +48,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 /* ── NAV TABS ── */
 .nav-tabs {
   background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 0 32px; display: flex; gap: 0;
+  padding: 0 32px; display: flex; gap: 0; overflow-x: auto;
 }
 .nav-tab {
   padding: 14px 20px; font-size: 13px; font-weight: 600; cursor: pointer;
@@ -75,11 +75,39 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 600;
 }
-.alt-chip .chip-dot { width: 8px; height: 8px; border-radius: 50%; }
 
 /* ── MAIN ── */
 .main { padding: 24px 32px; display: grid; gap: 20px; max-width: 1200px; margin: 0 auto; }
 .sec-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+/* ── TIMETABLE CARD ── */
+.timetable-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.tt-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.tt-header h3 { font-size: 13px; font-weight: 700; }
+.tt-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; padding: 3px 8px; border-radius: 6px; }
+.tt-row {
+  display: grid; grid-template-columns: 160px 1fr;
+  border-bottom: 1px solid var(--border); transition: background .15s;
+}
+.tt-row:last-child { border-bottom: none; }
+.tt-row:hover { background: var(--surf2); }
+.tt-time {
+  padding: 12px 16px; font-size: 11px; font-family: 'JetBrains Mono', monospace;
+  color: var(--muted); border-right: 1px solid var(--border); display: flex;
+  flex-direction: column; gap: 2px; justify-content: center;
+}
+.tt-time .dur { font-size: 10px; color: var(--border); background: var(--surf2); border-radius: 4px; padding: 2px 6px; width: fit-content; margin-top: 3px; font-weight: 600; }
+.tt-act {
+  padding: 12px 16px; font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 10px;
+}
+.tt-act .tt-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.tt-act .tt-note { font-size: 11px; color: var(--muted); margin-left: auto; font-weight: 400; }
+.tt-act .mand-tag {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px;
+  background: rgba(255,124,92,.15); color: var(--gate);
+  border: 1px solid rgba(255,124,92,.3); border-radius: 4px; padding: 1px 5px;
+}
 
 /* ── TRACKER ── */
 .tracker-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
@@ -90,14 +118,11 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .tracker-hdr-l { font-size: 13px; font-weight: 600; }
 .tracker-hdr-l span { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: 6px; }
 .tracker-hdr-r { display: flex; align-items: center; gap: 8px; }
-
 .reset-btn {
   font-size: 11px; color: var(--muted); background: none; border: 1px solid var(--border);
   border-radius: 8px; padding: 5px 12px; cursor: pointer; font-family: inherit; transition: all .2s;
 }
 .reset-btn:hover { color: var(--red); border-color: var(--red); }
-
-/* ── SAVE PROGRESS BUTTON ── */
 .save-btn {
   font-size: 11px; font-weight: 700; font-family: inherit;
   border-radius: 8px; padding: 5px 14px; cursor: pointer;
@@ -106,41 +131,28 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
   transition: all .25s; display: flex; align-items: center; gap: 6px;
 }
 .save-btn.unsaved {
-  background: rgba(34,197,94,.15);
-  border-color: rgba(34,197,94,.5);
-  color: var(--green);
+  background: rgba(34,197,94,.15); border-color: rgba(34,197,94,.5); color: var(--green);
   animation: savePulse 1.8s ease-in-out infinite;
 }
 .save-btn.unsaved:hover { background: rgba(34,197,94,.25); border-color: var(--green); }
 .save-btn.saved { background: rgba(34,197,94,.2); border-color: var(--green); color: var(--green); }
 .save-btn:disabled { opacity: .4; cursor: not-allowed; }
 @keyframes savePulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,.0); }
-  50%       { box-shadow: 0 0 0 4px rgba(34,197,94,.18); }
+  0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+  50%      { box-shadow: 0 0 0 4px rgba(34,197,94,.18); }
 }
 .save-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .25s; }
-.save-btn.unsaved .save-dot { background: var(--green); }
-.save-btn.saved   .save-dot { background: var(--green); }
+.save-btn.unsaved .save-dot, .save-btn.saved .save-dot { background: var(--green); }
 
-/* ── AUTO-LOG NOTICE BANNER ── */
+/* ── AUTO-LOG NOTICE ── */
 .autolog-notice {
   margin: 16px 32px 0;
-  background: rgba(167,139,250,.08);
-  border: 1px solid rgba(167,139,250,.3);
-  border-radius: 12px;
-  padding: 12px 18px;
-  font-size: 12px;
-  color: var(--sleep);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-  box-sizing: border-box;
+  background: rgba(167,139,250,.08); border: 1px solid rgba(167,139,250,.3);
+  border-radius: 12px; padding: 12px 18px; font-size: 12px; color: var(--sleep);
+  display: flex; align-items: center; gap: 10px;
+  max-width: 1200px; margin-left: auto; margin-right: auto; box-sizing: border-box;
 }
 .autolog-notice .notice-icon { font-size: 16px; flex-shrink: 0; }
-.autolog-notice strong { font-weight: 700; }
 #autolog-countdown { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--gold); }
 
 .tr-row {
@@ -156,8 +168,13 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .tr-row.mand    { border-left: 3px solid var(--gate); }
 
 .act-info { display: flex; flex-direction: column; gap: 3px; }
-.act-name { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px; }
+.act-name { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
 .act-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.act-time-chip {
+  font-size: 10px; font-family: 'JetBrains Mono', monospace; font-weight: 600;
+  color: var(--muted); background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 5px; padding: 1px 6px; white-space: nowrap;
+}
 .mand-tag {
   font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px;
   background: rgba(255,124,92,.15); color: var(--gate);
@@ -176,7 +193,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .h-input:focus    { border-color: var(--upsc); }
 .h-input:disabled { opacity: .35; cursor: not-allowed; }
 .h-unit { font-size: 11px; color: var(--muted); }
-
 .tick-btn {
   width: 40px; height: 40px; border-radius: 12px; border: 2px solid var(--border);
   background: var(--surf2); cursor: pointer; display: flex; align-items: center;
@@ -200,7 +216,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
   background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
   padding: 18px; position: relative; overflow: hidden; transition: border-color .2s;
 }
-.card::before { content:''; position: absolute; top:0;left:0;right:0; height:3px; background: var(--accent,var(--upsc)); }
+.card::before { content:''; position:absolute; top:0;left:0;right:0; height:3px; background: var(--accent,var(--upsc)); }
 .card:hover { border-color: var(--accent,var(--upsc)); }
 .card-lbl  { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; font-weight: 600; margin-bottom: 8px; }
 .card-val  { font-size: 30px; font-weight: 700; font-family: 'JetBrains Mono',monospace; line-height: 1; color: var(--accent,var(--text)); }
@@ -222,7 +238,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 /* ── STACKED BAR ── */
 .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
 .stk-bar { display: flex; height: 34px; border-radius: 10px; overflow: hidden; gap: 1px; }
-.stk-seg { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: rgba(255,255,255,.85); min-width: 0; overflow: hidden; white-space: nowrap; transition: flex .6s ease; }
+.stk-seg { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: rgba(255,255,255,.85); min-width: 0; overflow: hidden; white-space: nowrap; }
 .legend  { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
 .leg-item{ display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
 .leg-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
@@ -236,7 +252,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .log-btn:hover  { opacity: .88; }
 .log-btn:active { transform: scale(.98); }
 
-/* ── CUMULATIVE GRID ── */
+/* ── CUM GRID ── */
 .cum-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(170px,1fr)); gap: 12px; }
 .cum-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
 .cum-icon { font-size: 22px; margin-bottom: 8px; }
@@ -246,8 +262,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 
 /* ── DAY LOG VIEW ── */
 .log-view { padding: 24px 32px; max-width: 1200px; margin: 0 auto; }
-.log-view .sec-title { margin-bottom: 16px; }
-
 .log-list { display: grid; gap: 12px; }
 .log-entry { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
 .log-entry-hdr {
@@ -258,44 +272,20 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .log-date { font-size: 14px; font-weight: 700; }
 .log-date span { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 8px; }
 .log-pills { display: flex; gap: 8px; flex-wrap: wrap; }
-.log-pill {
-  font-size: 11px; font-weight: 700; padding: 3px 10px;
-  border-radius: 20px; border: 1px solid; font-family: 'JetBrains Mono',monospace;
-}
+.log-pill { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; border: 1px solid; font-family: 'JetBrains Mono',monospace; }
 .log-chevron { color: var(--muted); font-size: 12px; transition: transform .2s; flex-shrink: 0; }
 .log-chevron.open { transform: rotate(180deg); }
-
-.log-detail {
-  border-top: 1px solid var(--border); padding: 16px 18px;
-  display: none; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 10px;
-}
+.log-detail { border-top: 1px solid var(--border); padding: 16px 18px; display: none; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 10px; }
 .log-detail.open { display: grid; }
 .log-stat { background: var(--surf2); border-radius: 10px; padding: 12px 14px; }
 .log-stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .7px; font-weight: 600; margin-bottom: 5px; }
 .log-stat-val { font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono',monospace; }
 .log-stat-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
-
-.log-del-btn {
-  font-size: 11px; color: var(--muted); background: none; border: 1px solid var(--border);
-  border-radius: 7px; padding: 4px 10px; cursor: pointer; font-family: inherit; transition: all .2s;
-  margin-top: 10px;
-}
+.log-del-btn { font-size: 11px; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 7px; padding: 4px 10px; cursor: pointer; font-family: inherit; transition: all .2s; margin-top: 10px; }
 .log-del-btn:hover { color: var(--red); border-color: var(--red); }
-.auto-badge {
-  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px;
-  background: rgba(167,139,250,.12); color: var(--sleep);
-  border: 1px solid rgba(167,139,250,.3); border-radius: 4px; padding: 2px 6px; white-space: nowrap;
-}
-.eod-badge {
-  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px;
-  background: rgba(245,158,11,.12); color: var(--gold);
-  border: 1px solid rgba(245,158,11,.3); border-radius: 4px; padding: 2px 6px; white-space: nowrap;
-}
-
-.log-empty {
-  text-align: center; padding: 60px 24px; color: var(--muted); font-size: 14px;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-}
+.auto-badge { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; background: rgba(167,139,250,.12); color: var(--sleep); border: 1px solid rgba(167,139,250,.3); border-radius: 4px; padding: 2px 6px; white-space: nowrap; }
+.eod-badge  { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; background: rgba(245,158,11,.12); color: var(--gold); border: 1px solid rgba(245,158,11,.3); border-radius: 4px; padding: 2px 6px; white-space: nowrap; }
+.log-empty { text-align: center; padding: 60px 24px; color: var(--muted); font-size: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
 .log-empty span { font-size: 32px; display: block; margin-bottom: 12px; }
 
 /* ── TOAST ── */
@@ -311,19 +301,21 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 
 /* ── RESPONSIVE ── */
 @media (max-width:700px) {
-  .header, .sched-banner, .nav-tabs { padding-left: 16px; padding-right: 16px; }
+  .header, .sched-banner, .nav-tabs, .autolog-notice { padding-left: 16px; padding-right: 16px; }
   .main, .log-view { padding: 16px; }
-  .autolog-notice { margin: 12px 16px 0; }
+  .autolog-notice { margin: 12px 0 0; }
   .tr-row { grid-template-columns: 1fr 96px 42px; gap: 8px; padding: 11px 14px; }
   .h-input { width: 50px; }
   .cards-row { grid-template-columns: 1fr 1fr; }
   .circles-row { grid-template-columns: repeat(2,1fr); }
   .nav-tab { padding: 12px 12px; font-size: 12px; }
+  .tt-row { grid-template-columns: 130px 1fr; }
 }
 @media (max-width:400px) {
   .tr-row { grid-template-columns: 1fr 80px 38px; }
   .h-input { width: 42px; font-size: 12px; }
   .cards-row { grid-template-columns: 1fr; }
+  .tt-row { grid-template-columns: 110px 1fr; }
 }
 @media (prefers-reduced-motion:reduce) {
   .c-fg, .mini-bar-fill, .stk-seg { transition: none; }
@@ -349,9 +341,10 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 
 <!-- NAV -->
 <div class="nav-tabs">
-  <button class="nav-tab active" id="ntab-today"  onclick="showPage('today',  this)">📋 Today</button>
-  <button class="nav-tab"        id="ntab-logs"   onclick="showPage('logs',   this)">📅 Day Logs</button>
-  <button class="nav-tab"        id="ntab-totals" onclick="showPage('totals', this)">⚡ Cumulative</button>
+  <button class="nav-tab active" id="ntab-today"     onclick="showPage('today',     this)">📋 Today</button>
+  <button class="nav-tab"        id="ntab-timetable" onclick="showPage('timetable', this)">🕐 Timetable</button>
+  <button class="nav-tab"        id="ntab-logs"      onclick="showPage('logs',      this)">📅 Day Logs</button>
+  <button class="nav-tab"        id="ntab-totals"    onclick="showPage('totals',    this)">⚡ Cumulative</button>
 </div>
 
 <!-- SCHEDULE BANNER -->
@@ -359,76 +352,248 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 
 <!-- ===== PAGE: TODAY ===== -->
 <div id="page-today">
-
-  <!-- AUTO-LOG COUNTDOWN NOTICE (hidden until there is progress) -->
   <div class="autolog-notice" id="autolog-notice" style="display:none">
     <span class="notice-icon">⏱</span>
     <span>
-      <strong>Auto-log active</strong> — your progress will be automatically saved at midnight if you haven't logged yet.
+      <strong>Auto-log active</strong> — progress will be automatically saved at midnight.
       Time until auto-log: <span id="autolog-countdown">—</span>
     </span>
   </div>
 
-<main class="main">
+  <main class="main">
+    <section>
+      <div class="sec-title">Today's Activity Tracker</div>
+      <div class="tracker-card">
+        <div class="tracker-hdr">
+          <div class="tracker-hdr-l">Tick ✓ if fully done <span>— or enter hours completed</span></div>
+          <div class="tracker-hdr-r">
+            <button class="save-btn" id="save-btn" onclick="saveProgress()" disabled>
+              <span class="save-dot"></span>
+              <span id="save-btn-txt">Saved</span>
+            </button>
+            <button class="reset-btn" onclick="resetTracker()">↺ Reset</button>
+          </div>
+        </div>
+        <div id="tr-rows"></div>
+        <div class="tr-footer" id="tr-footer"></div>
+      </div>
+    </section>
 
-  <section>
-    <div class="sec-title">Today's Activity Tracker</div>
-    <div class="tracker-card">
-      <div class="tracker-hdr">
-        <div class="tracker-hdr-l">Tick ✓ if fully done <span>— or enter hours completed</span></div>
-        <div class="tracker-hdr-r">
-          <button class="save-btn" id="save-btn" onclick="saveProgress()" disabled>
-            <span class="save-dot"></span>
-            <span id="save-btn-txt">Saved</span>
-          </button>
-          <button class="reset-btn" onclick="resetTracker()">↺ Reset</button>
+    <section>
+      <div class="sec-title">Today at a Glance</div>
+      <div class="cards-row">
+        <div class="card" style="--accent:var(--gold)">
+          <div class="card-lbl">Planned Productive</div>
+          <div class="card-val" id="c-planned">—</div>
+          <div class="card-unit">hours today</div>
+        </div>
+        <div class="card" style="--accent:var(--green)">
+          <div class="card-lbl">Completed</div>
+          <div class="card-val" id="c-done">0</div>
+          <div class="card-unit">hours done</div>
+        </div>
+        <div class="card" style="--accent:var(--gate)">
+          <div class="card-lbl">Remaining</div>
+          <div class="card-val" id="c-remain">—</div>
+          <div class="card-unit">hours to go</div>
+        </div>
+        <div class="card" style="--accent:var(--upsc)">
+          <div class="card-lbl">Productivity</div>
+          <div class="card-val" id="c-pct">0%</div>
+          <div class="card-unit">of today's plan</div>
         </div>
       </div>
-      <div id="tr-rows"></div>
-      <div class="tr-footer" id="tr-footer"></div>
+    </section>
+
+    <section>
+      <div class="sec-title">Subject Progress — Today</div>
+      <div class="circles-row" id="circles-row"></div>
+    </section>
+
+    <section>
+      <div class="chart-card">
+        <div class="sec-title" style="margin-bottom:10px">24-Hour Day Breakdown</div>
+        <div class="stk-bar" id="stk-bar"></div>
+        <div class="legend" id="bar-legend"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ===== PAGE: TIMETABLE ===== -->
+<div id="page-timetable" style="display:none">
+  <div class="log-view">
+    <div class="sec-title">Full Weekly Timetable</div>
+
+    <!-- MON–THU GATE EVENING -->
+    <div style="margin-bottom:20px">
+      <div class="sec-title" style="margin-bottom:8px;color:var(--iiit)">Monday / Wednesday / Friday → GATE Evening</div>
+      <div class="timetable-card">
+        <div class="tt-header">
+          <span class="tt-badge" style="background:rgba(79,217,160,.12);color:var(--iiit);border:1px solid rgba(79,217,160,.3)">GATE Eve Days</span>
+          <h3 style="color:var(--muted);font-weight:500;font-size:12px">Evening block = GATE Preparation</h3>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">4:00 AM<div class="dur">Wake Up</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--gold)"></span>Wake Up & Morning Routine</div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">4:00 AM – 8:00 AM<div class="dur">4 hrs</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--upsc)"></span>UPSC — News, Current Affairs, GS<span class="tt-note">4 hours</span></div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">8:00 AM – 6:00 PM<div class="dur">10 hrs</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--iiit)"></span>IIIT Bangalore Fellowship<span class="tt-note">10 hours</span></div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">6:00 PM – 11:00 PM<div class="dur">5 hrs</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--gate)"></span>GATE Evening Study<span class="tt-note">5 hours</span></div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">11:00 PM<div class="dur">Sleep</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--sleep)"></span>Sleep (5 hrs → 4:00 AM)</div>
+        </div>
+      </div>
     </div>
-  </section>
 
-  <section>
-    <div class="sec-title">Today at a Glance</div>
-    <div class="cards-row">
-      <div class="card" style="--accent:var(--gold)">
-        <div class="card-lbl">Planned Productive</div>
-        <div class="card-val" id="c-planned">—</div>
-        <div class="card-unit">hours today</div>
-      </div>
-      <div class="card" style="--accent:var(--green)">
-        <div class="card-lbl">Completed</div>
-        <div class="card-val" id="c-done">0</div>
-        <div class="card-unit">hours done</div>
-      </div>
-      <div class="card" style="--accent:var(--gate)">
-        <div class="card-lbl">Remaining</div>
-        <div class="card-val" id="c-remain">—</div>
-        <div class="card-unit">hours to go</div>
-      </div>
-      <div class="card" style="--accent:var(--upsc)">
-        <div class="card-lbl">Productivity</div>
-        <div class="card-val" id="c-pct">0%</div>
-        <div class="card-unit">of today's plan</div>
+    <!-- MON–THU UPSC EVENING -->
+    <div style="margin-bottom:20px">
+      <div class="sec-title" style="margin-bottom:8px;color:var(--upsc)">Tuesday / Thursday → UPSC Evening</div>
+      <div class="timetable-card">
+        <div class="tt-header">
+          <span class="tt-badge" style="background:rgba(108,143,255,.12);color:var(--upsc);border:1px solid rgba(108,143,255,.3)">UPSC Eve Days</span>
+          <h3 style="color:var(--muted);font-weight:500;font-size:12px">Evening block = UPSC Preparation</h3>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">4:00 AM<div class="dur">Wake Up</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--gold)"></span>Wake Up & Morning Routine</div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">4:00 AM – 8:00 AM<div class="dur">4 hrs</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--upsc)"></span>UPSC — News, Current Affairs, GS<span class="tt-note">4 hours</span></div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">8:00 AM – 6:00 PM<div class="dur">10 hrs</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--iiit)"></span>IIIT Bangalore Fellowship<span class="tt-note">10 hours</span></div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">6:00 PM – 11:00 PM<div class="dur">5 hrs</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--upsc)"></span>UPSC Evening Study<span class="tt-note">5 hours</span></div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">11:00 PM<div class="dur">Sleep</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--sleep)"></span>Sleep (5 hrs → 4:00 AM)</div>
+        </div>
       </div>
     </div>
-  </section>
 
-  <section>
-    <div class="sec-title">Subject Progress — Today</div>
-    <div class="circles-row" id="circles-row"></div>
-  </section>
-
-  <section>
-    <div class="chart-card">
-      <div class="sec-title" style="margin-bottom:10px">24-Hour Day Breakdown</div>
-      <div class="stk-bar" id="stk-bar"></div>
-      <div class="legend" id="bar-legend"></div>
+    <!-- WEEKEND -->
+    <div style="margin-bottom:20px">
+      <div class="sec-title" style="margin-bottom:8px;color:var(--gold)">Saturday & Sunday — Weekend Schedule</div>
+      <div class="timetable-card">
+        <div class="tt-header">
+          <span class="tt-badge" style="background:rgba(245,158,11,.12);color:var(--gold);border:1px solid rgba(245,158,11,.3)">Weekend</span>
+          <h3 style="color:var(--muted);font-weight:500;font-size:12px">GATE fixed 3h · Evening alternates GATE / UPSC</h3>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">4:00 AM<div class="dur">Wake Up</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--gold)"></span>Wake Up & Morning Routine</div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">4:00 AM – 8:00 AM<div class="dur">4 hrs</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--upsc)"></span>UPSC — News, Current Affairs, GS<span class="tt-note">4 hours</span></div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">8:00 AM – 10:00 AM<div class="dur">2 hrs</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--iiit)"></span>IIIT Bangalore Fellowship<span class="tt-note">2 hours</span></div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">10:00 AM – 1:00 PM<div class="dur">3 hrs</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--gate)"></span>GATE Preparation <span class="mand-tag">mandatory 3h</span><span class="tt-note">3 hours</span></div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">1:00 PM – 4:00 PM<div class="dur">3 hrs</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--upsc)"></span>UPSC Preparation<span class="tt-note">3 hours</span></div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">4:00 PM – 6:00 PM<div class="dur">2 hrs</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--rest)"></span>Nap / Rest<span class="tt-note">2 hours</span></div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">6:00 PM – 8:00 PM<div class="dur">2 hrs</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--upsc)"></span>UPSC Preparation<span class="tt-note">2 hours</span></div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">8:00 PM – 11:00 PM<div class="dur">3 hrs</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--gate)"></span>GATE / UPSC Evening <span style="font-size:10px;color:var(--muted)">(alternate daily)</span><span class="tt-note">3 hours</span></div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">11:00 PM<div class="dur">Sleep</div></div>
+          <div class="tt-act"><span class="tt-dot" style="background:var(--sleep)"></span>Sleep (5 hrs → 4:00 AM)</div>
+        </div>
+      </div>
     </div>
-  </section>
 
-</main>
+    <!-- SUMMARY TABLE -->
+    <div class="sec-title" style="margin-top:8px">Weekly Hours Summary</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+      <div style="display:grid;grid-template-columns:1fr 100px 100px 100px 110px;padding:10px 16px;background:var(--surf2);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);">
+        <div>Activity</div><div style="text-align:center">Mon–Thu</div><div style="text-align:center">Weekday</div><div style="text-align:center">Weekend</div><div style="text-align:center">Productive?</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 100px 100px 100px 110px;padding:11px 16px;border-top:1px solid var(--border);align-items:center;">
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--sleep);display:inline-block"></span>Sleep</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--sleep)">5h</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--sleep)">5h</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--sleep)">5h</div>
+        <div style="text-align:center;font-size:11px;color:var(--muted)">Rest</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 100px 100px 100px 110px;padding:11px 16px;border-top:1px solid var(--border);align-items:center;">
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--upsc);display:inline-block"></span>UPSC Morning</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--upsc)">4h</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--upsc)">4h</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--upsc)">4h</div>
+        <div style="text-align:center;font-size:11px;color:var(--green)">✓ Yes</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 100px 100px 100px 110px;padding:11px 16px;border-top:1px solid var(--border);align-items:center;">
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--iiit);display:inline-block"></span>IIIT Fellowship</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--iiit)">10h</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--iiit)">10h</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--iiit)">2h</div>
+        <div style="text-align:center;font-size:11px;color:var(--green)">✓ Yes</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 100px 100px 100px 110px;padding:11px 16px;border-top:1px solid var(--border);align-items:center;">
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--gate);display:inline-block"></span>GATE Study</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gate)">5h*</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">—</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gate)">3h 🔒</div>
+        <div style="text-align:center;font-size:11px;color:var(--green)">✓ Yes</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 100px 100px 100px 110px;padding:11px 16px;border-top:1px solid var(--border);align-items:center;">
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--upsc);display:inline-block"></span>UPSC Evening</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">—</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--upsc)">5h*</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--upsc)">5h</div>
+        <div style="text-align:center;font-size:11px;color:var(--green)">✓ Yes</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 100px 100px 100px 110px;padding:11px 16px;border-top:1px solid var(--border);align-items:center;">
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--rest);display:inline-block"></span>Nap / Rest</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">—</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">—</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--rest)">2h</div>
+        <div style="text-align:center;font-size:11px;color:var(--muted)">Rest</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 100px 100px 100px 110px;padding:11px 16px;border-top:1px solid var(--border);background:var(--surf2);font-weight:700;align-items:center;">
+        <div style="color:var(--gold)">⚡ Total Productive</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold)">19h</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold)">19h</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold)">14h</div>
+        <div style="text-align:center;font-size:11px;color:var(--muted)"></div>
+      </div>
+      <div style="padding:10px 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">
+        * Evening alternates daily: GATE Eve days (Mon/Wed/Fri) → 5h GATE &nbsp;|&nbsp; UPSC Eve days (Tue/Thu) → 5h UPSC &nbsp;·&nbsp; 🔒 Weekend GATE is fixed minimum 3h
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ===== PAGE: DAY LOGS ===== -->
@@ -453,36 +618,44 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 /* ============================================================
    SCHEDULE DEFINITIONS
    ============================================================ */
+
+// Mon/Wed/Fri — GATE Evening
 const SCHED_WD_GATE = {
   id: 'weekday-gate', label: 'Weekday — GATE Evening',
   rows: [
-    { name:'Sleep',                    hours:5,  color:'var(--sleep)', key:'sleep', productive:false },
-    { name:'UPSC (News, CA, GS)',       hours:4,  color:'var(--upsc)',  key:'upsc',  productive:true  },
-    { name:'IIIT Bangalore Fellowship', hours:10, color:'var(--iiit)',  key:'iiit',  productive:true  },
-    { name:'GATE Evening Study',        hours:5,  color:'var(--gate)',  key:'gate',  productive:true  },
+    { name:'Sleep',                     hours:5,  color:'var(--sleep)', key:'sleep', productive:false, timeSlot:'11:00 PM – 4:00 AM' },
+    { name:'UPSC (News, CA, GS)',        hours:4,  color:'var(--upsc)',  key:'upsc',  productive:true,  timeSlot:'4:00 AM – 8:00 AM' },
+    { name:'IIIT Bangalore Fellowship',  hours:10, color:'var(--iiit)',  key:'iiit',  productive:true,  timeSlot:'8:00 AM – 6:00 PM' },
+    { name:'GATE Evening Study',         hours:5,  color:'var(--gate)',  key:'gate',  productive:true,  timeSlot:'6:00 PM – 11:00 PM' },
   ],
   totalProd:19, totalSched:24
 };
+
+// Tue/Thu — UPSC Evening
 const SCHED_WD_UPSC = {
   id: 'weekday-upsc', label: 'Weekday — UPSC Evening',
   rows: [
-    { name:'Sleep',                    hours:5,  color:'var(--sleep)', key:'sleep',  productive:false },
-    { name:'UPSC Morning (News,CA,GS)', hours:4,  color:'var(--upsc)',  key:'upsc',   productive:true  },
-    { name:'IIIT Bangalore Fellowship', hours:10, color:'var(--iiit)',  key:'iiit',   productive:true  },
-    { name:'UPSC Evening Study',        hours:5,  color:'var(--upsc)',  key:'upsc2',  productive:true  },
+    { name:'Sleep',                     hours:5,  color:'var(--sleep)', key:'sleep', productive:false, timeSlot:'11:00 PM – 4:00 AM' },
+    { name:'UPSC Morning (News, CA, GS)',hours:4,  color:'var(--upsc)',  key:'upsc',  productive:true,  timeSlot:'4:00 AM – 8:00 AM' },
+    { name:'IIIT Bangalore Fellowship',  hours:10, color:'var(--iiit)',  key:'iiit',  productive:true,  timeSlot:'8:00 AM – 6:00 PM' },
+    { name:'UPSC Evening Study',         hours:5,  color:'var(--upsc)',  key:'upsc2', productive:true,  timeSlot:'6:00 PM – 11:00 PM' },
   ],
   totalProd:19, totalSched:24
 };
+
+// Weekend (Sat/Sun)
 const SCHED_WE = {
   id: 'weekend', label: 'Weekend',
   rows: [
-    { name:'Sleep',                    hours:5,  color:'var(--sleep)', key:'sleep', productive:false },
-    { name:'Nap / Rest',               hours:2,  color:'var(--rest)',  key:'rest',  productive:false },
-    { name:'GATE (Mandatory 3h)',       hours:3,  color:'var(--gate)',  key:'gate',  productive:true,  mandatory:true },
-    { name:'UPSC',                     hours:14, color:'var(--upsc)',  key:'upsc',  productive:true  },
-    { name:'IIIT Bangalore Fellowship', hours:0,  color:'var(--iiit)',  key:'iiit',  productive:true  },
+    { name:'Sleep',                     hours:5,  color:'var(--sleep)', key:'sleep', productive:false, timeSlot:'11:00 PM – 4:00 AM' },
+    { name:'UPSC Morning (News, CA, GS)',hours:4,  color:'var(--upsc)',  key:'upsc',  productive:true,  timeSlot:'4:00 AM – 8:00 AM' },
+    { name:'IIIT Bangalore Fellowship',  hours:2,  color:'var(--iiit)',  key:'iiit',  productive:true,  timeSlot:'8:00 AM – 10:00 AM' },
+    { name:'GATE Preparation',           hours:3,  color:'var(--gate)',  key:'gate',  productive:true,  timeSlot:'10:00 AM – 1:00 PM', mandatory:true },
+    { name:'UPSC Preparation',           hours:5,  color:'var(--upsc)',  key:'upsc2', productive:true,  timeSlot:'1:00 PM – 4:00 PM & 6:00–8:00 PM' },
+    { name:'Nap / Rest',                 hours:2,  color:'var(--rest)',  key:'rest',  productive:false, timeSlot:'4:00 PM – 6:00 PM' },
+    { name:'GATE/UPSC Evening (alt.)',   hours:3,  color:'var(--gate)',  key:'gate2', productive:true,  timeSlot:'8:00 PM – 11:00 PM' },
   ],
-  totalProd:17, totalSched:24, totalRest:7
+  totalProd:15, totalSched:24, totalRest:7
 };
 
 /* ============================================================
@@ -492,574 +665,397 @@ let curPage  = 'today';
 let actState = {};
 let _unsaved = false;
 
-/* ============================================================
-   SCHEDULE HELPERS
-   ============================================================ */
-function isWeekend(d) {
-  const day = (d || new Date()).getDay();
-  return day === 0 || day === 6;
-}
+function isWeekend(d) { const day=(d||new Date()).getDay(); return day===0||day===6; }
 function scheduleForDate(d) {
-  const date = d || new Date();
+  const date=d||new Date();
   if (isWeekend(date)) return SCHED_WE;
-  const dow = date.getDay();
-  return (dow % 2 === 1) ? SCHED_WD_GATE : SCHED_WD_UPSC;
+  const dow=date.getDay();
+  // Mon=1,Wed=3,Fri=5 → GATE eve; Tue=2,Thu=4 → UPSC eve
+  return (dow===1||dow===3||dow===5) ? SCHED_WD_GATE : SCHED_WD_UPSC;
 }
 function currentSched() { return scheduleForDate(new Date()); }
 
 /* ============================================================
    PERSISTENCE
    ============================================================ */
-const LS_CUM   = 'scc_v5_cum';
-const LS_LOGS  = 'scc_v5_logs';
-const LS_STATE = 'scc_v5_state';
+const LS_CUM='scc_v6_cum', LS_LOGS='scc_v6_logs', LS_STATE='scc_v6_state';
 
-function loadCum() {
-  try { const r = localStorage.getItem(LS_CUM); if(r) return JSON.parse(r); } catch(e){}
-  return { upsc:0, gate:0, iiit:0, totalProd:0, days:0 };
-}
-function saveCum(c) { try { localStorage.setItem(LS_CUM, JSON.stringify(c)); } catch(e){} }
-
-function loadLogs() {
-  try { const r = localStorage.getItem(LS_LOGS); if(r) return JSON.parse(r); } catch(e){}
-  return [];
-}
-function saveLogs(logs) { try { localStorage.setItem(LS_LOGS, JSON.stringify(logs)); } catch(e){} }
-
+function loadCum()  { try{const r=localStorage.getItem(LS_CUM);  if(r)return JSON.parse(r);}catch(e){} return{upsc:0,gate:0,iiit:0,totalProd:0,days:0}; }
+function saveCum(c) { try{localStorage.setItem(LS_CUM,JSON.stringify(c));}catch(e){} }
+function loadLogs() { try{const r=localStorage.getItem(LS_LOGS); if(r)return JSON.parse(r);}catch(e){} return[]; }
+function saveLogs(l){ try{localStorage.setItem(LS_LOGS,JSON.stringify(l));}catch(e){} }
 function todayKey() { return new Date().toISOString().slice(0,10); }
+function saveState(){ try{localStorage.setItem(LS_STATE,JSON.stringify({date:todayKey(),actState}));}catch(e){} }
+function loadState(){ try{const r=localStorage.getItem(LS_STATE);if(!r)return null;return JSON.parse(r);}catch(e){} return null; }
 
-function saveState() {
-  try {
-    localStorage.setItem(LS_STATE, JSON.stringify({ date: todayKey(), actState }));
-  } catch(e){}
-}
-function loadState() {
-  try { const r = localStorage.getItem(LS_STATE); if (!r) return null; return JSON.parse(r); } catch(e){}
-  return null;
-}
-
-let cumData = loadCum();
-let dayLogs = loadLogs();
+let cumData=loadCum();
+let dayLogs=loadLogs();
 
 /* ============================================================
-   SAVE PROGRESS BUTTON STATE
+   SAVE BUTTON
    ============================================================ */
-function markUnsaved() {
-  _unsaved = true;
-  const btn = document.getElementById('save-btn');
-  if (!btn) return;
-  btn.classList.add('unsaved');
-  btn.classList.remove('saved');
-  btn.disabled = false;
-  document.getElementById('save-btn-txt').textContent = 'Save Progress';
+function markUnsaved(){
+  _unsaved=true;
+  const btn=document.getElementById('save-btn'); if(!btn)return;
+  btn.classList.add('unsaved'); btn.classList.remove('saved'); btn.disabled=false;
+  document.getElementById('save-btn-txt').textContent='Save Progress';
   updateAutologNotice();
 }
-function markSaved() {
-  _unsaved = false;
-  const btn = document.getElementById('save-btn');
-  if (!btn) return;
-  btn.classList.remove('unsaved');
-  btn.classList.add('saved');
-  btn.disabled = false;
-  document.getElementById('save-btn-txt').textContent = 'Saved ✓';
-  setTimeout(() => {
-    btn.classList.remove('saved');
-    btn.disabled = true;
-    document.getElementById('save-btn-txt').textContent = 'Saved';
-  }, 2200);
+function markSaved(){
+  _unsaved=false;
+  const btn=document.getElementById('save-btn'); if(!btn)return;
+  btn.classList.remove('unsaved'); btn.classList.add('saved'); btn.disabled=false;
+  document.getElementById('save-btn-txt').textContent='Saved ✓';
+  setTimeout(()=>{ btn.classList.remove('saved'); btn.disabled=true; document.getElementById('save-btn-txt').textContent='Saved'; },2200);
 }
-function saveProgress() {
-  saveState();
-  markSaved();
-  showToast('Progress saved ✓');
-}
+function saveProgress(){ saveState(); markSaved(); showToast('Progress saved ✓'); }
 
 /* ============================================================
-   AUTO-LOG NOTICE + COUNTDOWN
+   AUTO-LOG NOTICE
    ============================================================ */
-function hasAnyProgress() {
-  return Object.values(actState).some(s => s.ticked || (s.partial !== null && s.partial > 0));
-}
-
-function updateAutologNotice() {
-  const notice = document.getElementById('autolog-notice');
-  const cd     = document.getElementById('autolog-countdown');
-  if (!notice || !cd) return;
-
-  const alreadyLogged = !!dayLogs.find(l => l.dateKey === todayKey());
-  if (alreadyLogged || !hasAnyProgress()) {
-    notice.style.display = 'none';
-    return;
-  }
-  notice.style.display = 'flex';
-
-  // Compute time until midnight
-  const now       = new Date();
-  const midnight  = new Date(now);
-  midnight.setHours(24, 0, 0, 0);
-  const diffMs    = midnight - now;
-  const diffH     = Math.floor(diffMs / 3600000);
-  const diffM     = Math.floor((diffMs % 3600000) / 60000);
-  const diffS     = Math.floor((diffMs % 60000) / 1000);
-  cd.textContent  = `${String(diffH).padStart(2,'0')}:${String(diffM).padStart(2,'0')}:${String(diffS).padStart(2,'0')}`;
+function hasAnyProgress(){ return Object.values(actState).some(s=>s.ticked||(s.partial!==null&&s.partial>0)); }
+function updateAutologNotice(){
+  const notice=document.getElementById('autolog-notice');
+  const cd=document.getElementById('autolog-countdown');
+  if(!notice||!cd)return;
+  if(!!dayLogs.find(l=>l.dateKey===todayKey())||!hasAnyProgress()){notice.style.display='none';return;}
+  notice.style.display='flex';
+  const now=new Date(), mid=new Date(now); mid.setHours(24,0,0,0);
+  const diff=mid-now;
+  const h=Math.floor(diff/3600000), m=Math.floor((diff%3600000)/60000), s=Math.floor((diff%60000)/1000);
+  cd.textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
 /* ============================================================
    STATE HELPERS
    ============================================================ */
-function initState(fromSaved) {
-  const prev = fromSaved || actState;
-  actState = {};
-  currentSched().rows.forEach(r => {
-    actState[r.key] = prev[r.key] ? { ...prev[r.key] } : { ticked:false, partial:null };
+function initState(from){
+  const prev=from||actState; actState={};
+  currentSched().rows.forEach(r=>{
+    actState[r.key]=prev[r.key]?{...prev[r.key]}:{ticked:false,partial:null};
   });
 }
-
-function getDone(row) {
-  const s = actState[row.key];
-  if (!s) return 0;
-  if (s.ticked) return row.hours;
-  if (s.partial !== null) return Math.min(s.partial, row.hours);
+function getDone(row){
+  const s=actState[row.key]; if(!s)return 0;
+  if(s.ticked)return row.hours;
+  if(s.partial!==null)return Math.min(s.partial,row.hours);
   return 0;
 }
-
-function toggleTick(key) {
-  actState[key].ticked = !actState[key].ticked;
-  if (actState[key].ticked) actState[key].partial = null;
-  // Ticks save immediately — no pending unsaved state
-  saveState();
-  markSaved();
-  renderToday();
+function toggleTick(key){
+  actState[key].ticked=!actState[key].ticked;
+  if(actState[key].ticked)actState[key].partial=null;
+  saveState(); markSaved(); renderToday();
 }
-function onPartial(key, val) {
-  const p = parseFloat(val);
-  actState[key].partial = isNaN(p) ? null : Math.max(0, p);
-  if (!isNaN(p) && p > 0) actState[key].ticked = false;
-  markUnsaved();
-  renderToday();
+function onPartial(key,val){
+  const p=parseFloat(val);
+  actState[key].partial=isNaN(p)?null:Math.max(0,p);
+  if(!isNaN(p)&&p>0)actState[key].ticked=false;
+  markUnsaved(); renderToday();
 }
-function resetTracker() {
-  actState = {};
-  initState();
-  try { localStorage.removeItem(LS_STATE); } catch(e){}
-  _unsaved = false;
-  const btn = document.getElementById('save-btn');
-  if (btn) {
-    btn.classList.remove('unsaved','saved');
-    btn.disabled = true;
-    document.getElementById('save-btn-txt').textContent = 'Saved';
-  }
-  updateAutologNotice();
-  renderToday();
-  showToast('Tracker reset');
+function resetTracker(){
+  actState={}; initState();
+  try{localStorage.removeItem(LS_STATE);}catch(e){}
+  _unsaved=false;
+  const btn=document.getElementById('save-btn');
+  if(btn){btn.classList.remove('unsaved','saved');btn.disabled=true;document.getElementById('save-btn-txt').textContent='Saved';}
+  updateAutologNotice(); renderToday(); showToast('Tracker reset');
 }
 
 /* ============================================================
    COMMIT LOG
-   Core function — logs a specific saved state for a specific date.
-   autoReason: falsy = manual, 'midnight' = midnight rollover,
-               'eod' = end-of-day timer fired, 'stale' = next-day open
    ============================================================ */
-function _commitLog(dateStr, savedActState, autoReason) {
-  if (dayLogs.find(l => l.dateKey === dateStr)) return;
-
-  const logDate = new Date(dateStr + 'T12:00:00');
-  const sched   = scheduleForDate(logDate);
-
-  function doneFor(row, snap) {
-    const s = snap[row.key];
-    if (!s) return 0;
-    if (s.ticked) return row.hours;
-    if (s.partial !== null) return Math.min(s.partial, row.hours);
-    return 0;
-  }
-
-  const entries = sched.rows
-    .filter(r => r.productive && r.hours > 0)
-    .map(r => ({
-      key: r.key, name: r.name, color: r.color,
-      planned: r.hours,
-      done: doneFor(r, savedActState),
-      ticked: savedActState[r.key]?.ticked || false
-    }));
-
-  let upscH = 0, gateH = 0, iiitH = 0;
-  entries.forEach(e => {
-    if (e.key === 'upsc' || e.key === 'upsc2') upscH += e.done;
-    if (e.key === 'gate') gateH += e.done;
-    if (e.key === 'iiit') iiitH += e.done;
+function _commitLog(dateStr,snap,autoReason){
+  if(dayLogs.find(l=>l.dateKey===dateStr))return;
+  const logDate=new Date(dateStr+'T12:00:00');
+  const sched=scheduleForDate(logDate);
+  function doneFor(row,s){ const x=s[row.key]; if(!x)return 0; if(x.ticked)return row.hours; if(x.partial!==null)return Math.min(x.partial,row.hours); return 0; }
+  const entries=sched.rows.filter(r=>r.productive&&r.hours>0).map(r=>({
+    key:r.key,name:r.name,color:r.color,planned:r.hours,done:doneFor(r,snap),ticked:snap[r.key]?.ticked||false
+  }));
+  let upscH=0,gateH=0,iiitH=0;
+  entries.forEach(e=>{
+    if(e.key==='upsc'||e.key==='upsc2')upscH+=e.done;
+    if(e.key==='gate'||e.key==='gate2')gateH+=e.done;
+    if(e.key==='iiit')iiitH+=e.done;
   });
-  const prodH = upscH + gateH + iiitH;
-
-  const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const dateLabel = `${DAYS[logDate.getDay()]}, ${logDate.getDate()} ${MONTHS[logDate.getMonth()]} ${logDate.getFullYear()}`;
-
-  dayLogs.unshift({
-    dateKey: dateStr, dateLabel,
-    schedId: sched.id, schedLabel: sched.label,
-    entries,
-    totals: { upsc:upscH, gate:gateH, iiit:iiitH, prod:prodH },
-    autoLogged: !!autoReason,
-    autoReason: autoReason || null
-  });
+  const prodH=upscH+gateH+iiitH;
+  const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dateLabel=`${DAYS[logDate.getDay()]}, ${logDate.getDate()} ${MONTHS[logDate.getMonth()]} ${logDate.getFullYear()}`;
+  dayLogs.unshift({dateKey:dateStr,dateLabel,schedId:sched.id,schedLabel:sched.label,entries,totals:{upsc:upscH,gate:gateH,iiit:iiitH,prod:prodH},autoLogged:!!autoReason,autoReason:autoReason||null});
   saveLogs(dayLogs);
-
-  cumData.upsc      += upscH;
-  cumData.gate      += gateH;
-  cumData.iiit      += iiitH;
-  cumData.totalProd += prodH;
-  cumData.days      += 1;
+  cumData.upsc+=upscH; cumData.gate+=gateH; cumData.iiit+=iiitH; cumData.totalProd+=prodH; cumData.days+=1;
   saveCum(cumData);
 }
 
-/* ============================================================
-   LOG TODAY (manual)
-   ============================================================ */
-function logToday() {
-  const dateKey = todayKey();
-  if (dayLogs.find(l => l.dateKey === dateKey)) {
-    showToast('Today already logged — delete it first to re-log');
-    return;
-  }
-  _commitLog(dateKey, actState, null);
-  actState = {}; initState();
-  try { localStorage.removeItem(LS_STATE); } catch(e){}
-  _unsaved = false;
-  const btn = document.getElementById('save-btn');
-  if (btn) { btn.classList.remove('unsaved','saved'); btn.disabled = true; document.getElementById('save-btn-txt').textContent = 'Saved'; }
+function logToday(){
+  const dk=todayKey();
+  if(dayLogs.find(l=>l.dateKey===dk)){showToast('Today already logged — delete it first to re-log');return;}
+  _commitLog(dk,actState,null);
+  actState={}; initState();
+  try{localStorage.removeItem(LS_STATE);}catch(e){}
+  _unsaved=false;
+  const btn=document.getElementById('save-btn');
+  if(btn){btn.classList.remove('unsaved','saved');btn.disabled=true;document.getElementById('save-btn-txt').textContent='Saved';}
   renderAll();
-  const prod = dayLogs[0]?.totals?.prod || 0;
-  showToast(`Day logged ✓  —  ${prod.toFixed(1)}h productive`);
+  showToast(`Day logged ✓  —  ${dayLogs[0]?.totals?.prod?.toFixed(1)||0}h productive`);
 }
 
-/* ============================================================
-   AUTO-LOG HELPER
-   Checks if a given date needs auto-logging and does it.
-   Returns true if it logged something.
-   ============================================================ */
-function autoLogIfNeeded(dateStr, snap, reason) {
-  if (!dateStr) return false;
-  if (dayLogs.find(l => l.dateKey === dateStr)) return false;
-  const hadProgress = Object.values(snap).some(s => s.ticked || (s.partial !== null && s.partial > 0));
-  if (!hadProgress) return false;
-  _commitLog(dateStr, snap, reason);
-  return true;
+function autoLogIfNeeded(dateStr,snap,reason){
+  if(!dateStr)return false;
+  if(dayLogs.find(l=>l.dateKey===dateStr))return false;
+  if(!Object.values(snap).some(s=>s.ticked||(s.partial!==null&&s.partial>0)))return false;
+  _commitLog(dateStr,snap,reason); return true;
 }
 
-/* ============================================================
-   DELETE LOG
-   ============================================================ */
-function deleteLog(dateKey) {
-  const idx = dayLogs.findIndex(l => l.dateKey === dateKey);
-  if (idx === -1) return;
-  const log = dayLogs[idx];
-  cumData.upsc      -= log.totals.upsc;
-  cumData.gate      -= log.totals.gate;
-  cumData.iiit      -= log.totals.iiit;
-  cumData.totalProd -= log.totals.prod;
-  cumData.days      -= 1;
-  if (cumData.days < 0) cumData.days = 0;
-  saveCum(cumData);
-  dayLogs.splice(idx,1);
-  saveLogs(dayLogs);
-  renderAll();
-  showToast('Log entry deleted');
+function deleteLog(dateKey){
+  const idx=dayLogs.findIndex(l=>l.dateKey===dateKey); if(idx===-1)return;
+  const log=dayLogs[idx];
+  cumData.upsc-=log.totals.upsc; cumData.gate-=log.totals.gate; cumData.iiit-=log.totals.iiit;
+  cumData.totalProd-=log.totals.prod; cumData.days-=1; if(cumData.days<0)cumData.days=0;
+  saveCum(cumData); dayLogs.splice(idx,1); saveLogs(dayLogs); renderAll(); showToast('Log entry deleted');
 }
 
 /* ============================================================
    PAGE SWITCHING
    ============================================================ */
-function showPage(page, btn) {
-  curPage = page;
-  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  document.getElementById('page-today').style.display  = page==='today'  ? '' : 'none';
-  document.getElementById('page-logs').style.display   = page==='logs'   ? '' : 'none';
-  document.getElementById('page-totals').style.display = page==='totals' ? '' : 'none';
-  document.getElementById('sched-banner').style.display = page==='today' ? '' : 'none';
-  if (page==='logs')   renderLogs();
-  if (page==='totals') renderCumulative();
+function showPage(page,btn){
+  curPage=page;
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  ['today','timetable','logs','totals'].forEach(p=>{
+    document.getElementById('page-'+p).style.display=p===page?'':'none';
+  });
+  document.getElementById('sched-banner').style.display=page==='today'?'':'none';
+  if(page==='logs')renderLogs();
+  if(page==='totals')renderCumulative();
 }
 
 /* ============================================================
    TOAST
    ============================================================ */
-function showToast(msg, color) {
-  const t   = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.borderColor = color || 'var(--green)';
-  t.style.color       = color || 'var(--green)';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3200);
+function showToast(msg,color){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.borderColor=color||'var(--green)'; t.style.color=color||'var(--green)';
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3200);
 }
 
 /* ============================================================
    RENDER: DATE HEADER
    ============================================================ */
-function renderDateHeader() {
-  const now    = new Date();
-  const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  document.getElementById('today-date').textContent =
-    `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-  const h = now.getHours();
-  document.getElementById('today-time').textContent =
-    h < 12 ? '☀️ Morning' : h < 17 ? '🌤 Afternoon' : '🌙 Evening';
+function renderDateHeader(){
+  const now=new Date();
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('today-date').textContent=`${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const h=now.getHours();
+  document.getElementById('today-time').textContent=h<12?'☀️ Morning':h<17?'🌤 Afternoon':'🌙 Evening';
 }
 
 /* ============================================================
    RENDER: SCHEDULE BANNER
    ============================================================ */
-function renderSchedBanner() {
-  const sched = currentSched();
-  const dow   = new Date().getDay();
-  const isWE  = isWeekend();
-  let eveInfo = '';
-  if (!isWE) {
-    const eveType  = (dow % 2 === 1) ? 'GATE' : 'UPSC';
-    const eveColor = eveType === 'GATE' ? 'var(--gate)' : 'var(--upsc)';
-    const nextDow  = dow === 5 ? null : dow + 1;
-    const nextEve  = nextDow ? ((nextDow % 2 === 1) ? 'GATE' : 'UPSC') : 'Weekend';
-    eveInfo = `
-      <div class="alt-chip">
-        <span class="chip-dot" style="background:${eveColor}"></span>
-        Evening: <strong style="color:${eveColor};margin-left:4px">${eveType}</strong>
-        <span style="color:var(--muted);font-weight:400;margin-left:8px">· Next: ${nextEve}</span>
-      </div>`;
-  } else {
-    eveInfo = `
-      <div class="alt-chip" style="border-color:rgba(108,143,255,.3);color:var(--upsc)">
-        🔒 GATE 3h fixed &nbsp;·&nbsp; <span style="color:var(--muted)">Rest = UPSC</span>
-      </div>`;
+function renderSchedBanner(){
+  const sched=currentSched();
+  const dow=new Date().getDay();
+  const isWE=isWeekend();
+  let eveInfo='';
+  if(!isWE){
+    const isGateEve=(dow===1||dow===3||dow===5);
+    const eveType=isGateEve?'GATE':'UPSC';
+    const eveColor=isGateEve?'var(--gate)':'var(--upsc)';
+    const nextDow=dow===5?6:dow+1;
+    const nextIsGate=(nextDow===1||nextDow===3||nextDow===5);
+    const nextEve=nextDow===6?'Weekend':(nextIsGate?'GATE Eve':'UPSC Eve');
+    eveInfo=`<div class="alt-chip">
+      <span style="width:8px;height:8px;border-radius:50%;background:${eveColor};display:inline-block"></span>
+      Evening: <strong style="color:${eveColor};margin-left:4px">${eveType}</strong>
+      <span style="color:var(--muted);font-weight:400;margin-left:8px">· Next: ${nextEve}</span>
+    </div>`;
+  }else{
+    eveInfo=`<div class="alt-chip" style="border-color:rgba(255,124,92,.3);color:var(--gate)">
+      🔒 GATE 3h fixed &nbsp;·&nbsp; <span style="color:var(--muted)">Evening alternates</span>
+    </div>`;
   }
-  document.getElementById('sched-banner').innerHTML = `
-    <div class="sched-pill">
-      <div class="pdot" style="background:${isWE ? 'var(--upsc)' : 'var(--iiit)'}"></div>
-      <span class="plbl">Schedule:</span>
-      <span>${sched.label}</span>
-    </div>
-    <div class="sched-pill">
-      <div class="pdot" style="background:var(--gold)"></div>
-      <span class="plbl">Productive goal:</span>
-      <span>${sched.totalProd}h</span>
-    </div>
+  document.getElementById('sched-banner').innerHTML=`
+    <div class="sched-pill"><div class="pdot" style="background:${isWE?'var(--gold)':'var(--iiit)'}"></div><span class="plbl">Schedule:</span><span>${sched.label}</span></div>
+    <div class="sched-pill"><div class="pdot" style="background:var(--gold)"></div><span class="plbl">Productive goal:</span><span>${sched.totalProd}h</span></div>
     ${eveInfo}`;
 }
 
 /* ============================================================
    RENDER: TRACKER ROWS
    ============================================================ */
-function renderTrackerRows() {
-  const sched = currentSched();
-  const html  = sched.rows.map(row => {
-    const s      = actState[row.key] || { ticked:false, partial:null };
-    const done   = getDone(row);
-    const pct    = row.hours > 0 ? Math.min(100, Math.round((done/row.hours)*100)) : 0;
-    const isTick = s.ticked;
-    const isPart = !isTick && done > 0;
-    const cls    = isTick ? 'done' : isPart ? 'partial' : '';
-    const mCls   = row.mandatory ? 'mand' : '';
-    let stxt = row.hours > 0 ? `Planned: ${row.hours}h` : 'Not scheduled today';
-    let sclr = 'var(--muted)';
-    if (isTick)      { stxt = '✓ Fully completed';               sclr = 'var(--green)'; }
-    else if (isPart) { stxt = `${done}h of ${row.hours}h done`;  sclr = 'var(--gold)'; }
-    const disabled = isTick || row.hours === 0;
-    const inpVal   = s.partial !== null ? s.partial : '';
+function renderTrackerRows(){
+  const sched=currentSched();
+  const html=sched.rows.map(row=>{
+    const s=actState[row.key]||{ticked:false,partial:null};
+    const done=getDone(row);
+    const pct=row.hours>0?Math.min(100,Math.round((done/row.hours)*100)):0;
+    const isTick=s.ticked, isPart=!isTick&&done>0;
+    const cls=isTick?'done':isPart?'partial':'';
+    const mCls=row.mandatory?'mand':'';
+    let stxt=row.hours>0?`Planned: ${row.hours}h`:'Not scheduled today';
+    let sclr='var(--muted)';
+    if(isTick){stxt='✓ Fully completed';sclr='var(--green)';}
+    else if(isPart){stxt=`${done}h of ${row.hours}h done`;sclr='var(--gold)';}
+    const disabled=isTick||row.hours===0;
+    const inpVal=s.partial!==null?s.partial:'';
     return `
     <div class="tr-row ${cls} ${mCls}">
       <div class="act-info">
         <div class="act-name">
           <span class="act-dot" style="background:${row.color}"></span>
           ${row.name}
-          ${row.mandatory ? '<span class="mand-tag">mandatory</span>' : ''}
+          ${row.mandatory?'<span class="mand-tag">mandatory 3h</span>':''}
+          ${row.timeSlot?`<span class="act-time-chip">${row.timeSlot}</span>`:''}
         </div>
         <div class="act-stat" style="color:${sclr}">${stxt}</div>
-        ${row.hours > 0 ? `<div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%;background:${row.color}"></div></div>` : ''}
+        ${row.hours>0?`<div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%;background:${row.color}"></div></div>`:''}
       </div>
       <div class="act-ctrl">
         <input class="h-input" type="number" min="0" max="${row.hours||24}" step="0.5"
           value="${inpVal}" placeholder="${row.hours}h"
-          ${disabled ? 'disabled' : ''}
+          ${disabled?'disabled':''}
           oninput="onPartial('${row.key}',this.value)">
         <span class="h-unit">h</span>
       </div>
       <button class="tick-btn ${isTick?'ticked':''}"
         onclick="toggleTick('${row.key}')"
-        ${row.hours===0 ? 'disabled style="opacity:.3;cursor:not-allowed"' : ''}>
-        ${isTick ? '✓' : '○'}
+        ${row.hours===0?'disabled style="opacity:.3;cursor:not-allowed"':''}>
+        ${isTick?'✓':'○'}
       </button>
     </div>`;
   }).join('');
-  document.getElementById('tr-rows').innerHTML = html;
+  document.getElementById('tr-rows').innerHTML=html;
 
-  const prodDone  = sched.rows.filter(r=>r.productive).reduce((s,r)=>s+getDone(r), 0);
-  const tickCount = sched.rows.filter(r=>actState[r.key]?.ticked).length;
-  const total     = sched.rows.length;
-  const pctProd   = sched.totalProd > 0 ? Math.min(100,Math.round((prodDone/sched.totalProd)*100)) : 0;
-  document.getElementById('tr-footer').innerHTML = `
-    <div class="ftr-stat">
-      <div class="ftr-lbl">Ticked Off</div>
-      <div class="ftr-val" style="color:var(--green)">${tickCount}/${total}</div>
-    </div>
-    <div class="ftr-stat">
-      <div class="ftr-lbl">Productive Done</div>
-      <div class="ftr-val" style="color:var(--gold)">${prodDone.toFixed(1)}h</div>
-    </div>
-    <div class="ftr-stat">
-      <div class="ftr-lbl">vs Plan</div>
-      <div class="ftr-val" style="color:var(--upsc)">${pctProd}%</div>
-    </div>
+  const prodDone=sched.rows.filter(r=>r.productive).reduce((s,r)=>s+getDone(r),0);
+  const tickCount=sched.rows.filter(r=>actState[r.key]?.ticked).length;
+  const total=sched.rows.length;
+  const pctProd=sched.totalProd>0?Math.min(100,Math.round((prodDone/sched.totalProd)*100)):0;
+  document.getElementById('tr-footer').innerHTML=`
+    <div class="ftr-stat"><div class="ftr-lbl">Ticked Off</div><div class="ftr-val" style="color:var(--green)">${tickCount}/${total}</div></div>
+    <div class="ftr-stat"><div class="ftr-lbl">Productive Done</div><div class="ftr-val" style="color:var(--gold)">${prodDone.toFixed(1)}h</div></div>
+    <div class="ftr-stat"><div class="ftr-lbl">vs Plan</div><div class="ftr-val" style="color:var(--upsc)">${pctProd}%</div></div>
     <div style="margin-left:auto;align-self:center">
-      <button class="log-btn" style="width:auto;padding:10px 22px" onclick="logToday()">
-        ✓ Log Day
-      </button>
+      <button class="log-btn" style="width:auto;padding:10px 22px" onclick="logToday()">✓ Log Day</button>
     </div>`;
 }
 
 /* ============================================================
    RENDER: GLANCE CARDS
    ============================================================ */
-function renderGlance() {
-  const sched = currentSched();
-  const done  = sched.rows.filter(r=>r.productive).reduce((s,r)=>s+getDone(r), 0);
-  const plan  = sched.totalProd;
-  const rem   = Math.max(0, plan - done);
-  const pct   = plan > 0 ? Math.min(100,Math.round((done/plan)*100)) : 0;
-  document.getElementById('c-planned').textContent = plan;
-  document.getElementById('c-done').textContent    = done.toFixed(1).replace('.0','');
-  document.getElementById('c-remain').textContent  = rem.toFixed(1).replace('.0','');
-  document.getElementById('c-pct').textContent     = pct + '%';
+function renderGlance(){
+  const sched=currentSched();
+  const done=sched.rows.filter(r=>r.productive).reduce((s,r)=>s+getDone(r),0);
+  const plan=sched.totalProd, rem=Math.max(0,plan-done);
+  const pct=plan>0?Math.min(100,Math.round((done/plan)*100)):0;
+  document.getElementById('c-planned').textContent=plan;
+  document.getElementById('c-done').textContent=done.toFixed(1).replace('.0','');
+  document.getElementById('c-remain').textContent=rem.toFixed(1).replace('.0','');
+  document.getElementById('c-pct').textContent=pct+'%';
 }
 
 /* ============================================================
    RENDER: CIRCLES
    ============================================================ */
-function circleSVG(pct, color) {
-  const r=35, circ=2*Math.PI*r, off=circ-(pct/100)*circ;
+function circleSVG(pct,color){
+  const r=35,circ=2*Math.PI*r,off=circ-(pct/100)*circ;
   return `<svg width="84" height="84" viewBox="0 0 84 84">
     <circle class="c-bg" cx="42" cy="42" r="${r}"/>
-    <circle class="c-fg" cx="42" cy="42" r="${r}" stroke="${color}"
-      stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"/>
+    <circle class="c-fg" cx="42" cy="42" r="${r}" stroke="${color}" stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"/>
   </svg>`;
 }
-
-function renderCircles() {
-  const sched = currentSched();
-  const subjects = [
-    { key:'upsc',  label:'UPSC Morning', color:'var(--upsc)' },
-    { key:'upsc2', label:'UPSC Evening', color:'var(--upsc)' },
-    { key:'gate',  label:'GATE',         color:'var(--gate)' },
-    { key:'iiit',  label:'IIIT',         color:'var(--iiit)' },
-  ].filter(s => { const row = sched.rows.find(r=>r.key===s.key); return row && row.hours > 0; });
-
-  const prodDone = sched.rows.filter(r=>r.productive).reduce((s,r)=>s+getDone(r), 0);
-  const totalPct = Math.min(100,Math.round((prodDone/sched.totalProd)*100));
-  const html = subjects.map(s => {
-    const row  = sched.rows.find(r=>r.key===s.key);
-    const done = getDone(row);
-    const pct  = Math.min(100,Math.round((done/row.hours)*100));
-    const tick = actState[s.key]?.ticked;
-    return `
-    <div class="circle-card">
-      <div class="circle-wrap">
-        ${circleSVG(pct, s.color)}
-        <div class="c-inner"><span class="c-pct" style="color:${s.color}">${pct}%</span></div>
-      </div>
+function renderCircles(){
+  const sched=currentSched();
+  const subjects=[
+    {key:'upsc',  label:'UPSC Morning',color:'var(--upsc)'},
+    {key:'upsc2', label:'UPSC Evening', color:'var(--upsc)'},
+    {key:'gate',  label:'GATE',         color:'var(--gate)'},
+    {key:'gate2', label:'GATE Evening', color:'var(--gate)'},
+    {key:'iiit',  label:'IIIT',         color:'var(--iiit)'},
+  ].filter(s=>{const row=sched.rows.find(r=>r.key===s.key);return row&&row.hours>0;});
+  const prodDone=sched.rows.filter(r=>r.productive).reduce((s,r)=>s+getDone(r),0);
+  const totalPct=Math.min(100,Math.round((prodDone/sched.totalProd)*100));
+  const html=subjects.map(s=>{
+    const row=sched.rows.find(r=>r.key===s.key);
+    const done=getDone(row),pct=Math.min(100,Math.round((done/row.hours)*100));
+    const tick=actState[s.key]?.ticked;
+    return `<div class="circle-card">
+      <div class="circle-wrap">${circleSVG(pct,s.color)}<div class="c-inner"><span class="c-pct" style="color:${s.color}">${pct}%</span></div></div>
       <div class="c-name" style="color:${s.color}">${s.label}</div>
-      ${tick ? '<div class="c-tick">✓ Done</div>' : `<div class="c-hrs">${done}h / ${row.hours}h</div>`}
+      ${tick?'<div class="c-tick">✓ Done</div>':`<div class="c-hrs">${done}h / ${row.hours}h</div>`}
     </div>`;
   }).join('');
-  const overall = `
-  <div class="circle-card">
-    <div class="circle-wrap">
-      ${circleSVG(totalPct,'#f59e0b')}
-      <div class="c-inner"><span class="c-pct" style="color:var(--gold)">${totalPct}%</span></div>
-    </div>
+  const overall=`<div class="circle-card">
+    <div class="circle-wrap">${circleSVG(totalPct,'#f59e0b')}<div class="c-inner"><span class="c-pct" style="color:var(--gold)">${totalPct}%</span></div></div>
     <div class="c-name" style="color:var(--gold)">Overall</div>
     <div class="c-hrs">${prodDone.toFixed(1)}h / ${sched.totalProd}h</div>
   </div>`;
-  document.getElementById('circles-row').innerHTML = html + overall;
+  document.getElementById('circles-row').innerHTML=html+overall;
 }
 
 /* ============================================================
    RENDER: STACKED BAR
    ============================================================ */
-function renderBar() {
-  const sched = currentSched();
-  const bar = sched.rows.filter(r=>r.hours>0).map(r => {
-    const pct = (r.hours/24)*100;
-    return `<div class="stk-seg" style="flex:${r.hours};background:${r.color}" title="${r.name}: ${r.hours}h">
-      ${pct>8 ? r.hours+'h' : ''}
-    </div>`;
+function renderBar(){
+  const sched=currentSched();
+  const bar=sched.rows.filter(r=>r.hours>0).map(r=>{
+    const pct=(r.hours/24)*100;
+    return `<div class="stk-seg" style="flex:${r.hours};background:${r.color}" title="${r.name}: ${r.hours}h">${pct>8?r.hours+'h':''}</div>`;
   }).join('');
-  const legend = sched.rows.filter(r=>r.hours>0).map(r =>
-    `<div class="leg-item"><div class="leg-dot" style="background:${r.color}"></div>${r.name} (${r.hours}h)</div>`
+  const legend=sched.rows.filter(r=>r.hours>0).map(r=>
+    `<div class="leg-item"><div class="leg-dot" style="background:${r.color}"></div>${r.name} (${r.hours}h) <span style="font-size:10px;color:var(--border);margin-left:4px">${r.timeSlot||''}</span></div>`
   ).join('');
-  document.getElementById('stk-bar').innerHTML    = bar;
-  document.getElementById('bar-legend').innerHTML = legend;
+  document.getElementById('stk-bar').innerHTML=bar;
+  document.getElementById('bar-legend').innerHTML=legend;
 }
 
 /* ============================================================
-   RENDER: DAY LOGS PAGE
+   RENDER: DAY LOGS
    ============================================================ */
-function toggleLogEntry(dateKey) {
-  const det = document.getElementById('det-' + dateKey);
-  const chv = document.getElementById('chv-' + dateKey);
-  if (!det) return;
-  const isOpen = det.classList.toggle('open');
-  chv.classList.toggle('open', isOpen);
+function toggleLogEntry(dateKey){
+  const det=document.getElementById('det-'+dateKey);
+  const chv=document.getElementById('chv-'+dateKey);
+  if(!det)return;
+  const isOpen=det.classList.toggle('open');
+  chv.classList.toggle('open',isOpen);
 }
-
-function renderLogs() {
-  const container = document.getElementById('log-list');
-  if (!dayLogs.length) {
-    container.innerHTML = `<div class="log-empty"><span>📭</span>No days logged yet.<br>Complete today's tracker and hit "Log Day" to save your first entry.</div>`;
+function renderLogs(){
+  const container=document.getElementById('log-list');
+  if(!dayLogs.length){
+    container.innerHTML=`<div class="log-empty"><span>📭</span>No days logged yet.<br>Complete today's tracker and hit "Log Day" to save your first entry.</div>`;
     return;
   }
-  container.innerHTML = dayLogs.map(log => {
-    const { dateKey, dateLabel, schedLabel, entries, totals, autoLogged, autoReason } = log;
-    const pills = [
-      totals.upsc > 0 ? `<span class="log-pill" style="color:var(--upsc);border-color:rgba(108,143,255,.35);background:rgba(108,143,255,.08)">${totals.upsc.toFixed(1)}h UPSC</span>` : '',
-      totals.gate > 0 ? `<span class="log-pill" style="color:var(--gate);border-color:rgba(255,124,92,.35);background:rgba(255,124,92,.08)">${totals.gate.toFixed(1)}h GATE</span>` : '',
-      totals.iiit > 0 ? `<span class="log-pill" style="color:var(--iiit);border-color:rgba(79,217,160,.35);background:rgba(79,217,160,.08)">${totals.iiit.toFixed(1)}h IIIT</span>` : '',
+  container.innerHTML=dayLogs.map(log=>{
+    const{dateKey,dateLabel,schedLabel,entries,totals,autoLogged,autoReason}=log;
+    const pills=[
+      totals.upsc>0?`<span class="log-pill" style="color:var(--upsc);border-color:rgba(108,143,255,.35);background:rgba(108,143,255,.08)">${totals.upsc.toFixed(1)}h UPSC</span>`:'',
+      totals.gate>0?`<span class="log-pill" style="color:var(--gate);border-color:rgba(255,124,92,.35);background:rgba(255,124,92,.08)">${totals.gate.toFixed(1)}h GATE</span>`:'',
+      totals.iiit>0?`<span class="log-pill" style="color:var(--iiit);border-color:rgba(79,217,160,.35);background:rgba(79,217,160,.08)">${totals.iiit.toFixed(1)}h IIIT</span>`:'',
       `<span class="log-pill" style="color:var(--gold);border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.08)">${totals.prod.toFixed(1)}h total</span>`,
     ].filter(Boolean).join('');
-
-    let autoBadge = '';
-    if (autoLogged) {
-      if (autoReason === 'eod') {
-        autoBadge = '<span class="eod-badge">⏱ end-of-day auto</span>';
-      } else {
-        autoBadge = '<span class="auto-badge">⚡ auto-logged</span>';
-      }
-    }
-
-    const detail_stats = `
-      <div class="log-stat"><div class="log-stat-lbl">UPSC</div><div class="log-stat-val" style="color:var(--upsc)">${totals.upsc.toFixed(1)}h</div><div class="log-stat-sub">hours completed</div></div>
-      <div class="log-stat"><div class="log-stat-lbl">GATE</div><div class="log-stat-val" style="color:var(--gate)">${totals.gate.toFixed(1)}h</div><div class="log-stat-sub">hours completed</div></div>
-      <div class="log-stat"><div class="log-stat-lbl">IIIT</div><div class="log-stat-val" style="color:var(--iiit)">${totals.iiit.toFixed(1)}h</div><div class="log-stat-sub">hours completed</div></div>
-      <div class="log-stat"><div class="log-stat-lbl">Total Productive</div><div class="log-stat-val" style="color:var(--gold)">${totals.prod.toFixed(1)}h</div><div class="log-stat-sub">schedule: ${schedLabel}</div></div>`;
-
-    const detail_entries = (entries || []).map(e => `
+    let autoBadge=autoLogged?(autoReason==='eod'?'<span class="eod-badge">⏱ end-of-day auto</span>':'<span class="auto-badge">⚡ auto-logged</span>'):'';
+    const detail_stats=`
+      <div class="log-stat"><div class="log-stat-lbl">UPSC</div><div class="log-stat-val" style="color:var(--upsc)">${totals.upsc.toFixed(1)}h</div></div>
+      <div class="log-stat"><div class="log-stat-lbl">GATE</div><div class="log-stat-val" style="color:var(--gate)">${totals.gate.toFixed(1)}h</div></div>
+      <div class="log-stat"><div class="log-stat-lbl">IIIT</div><div class="log-stat-val" style="color:var(--iiit)">${totals.iiit.toFixed(1)}h</div></div>
+      <div class="log-stat"><div class="log-stat-lbl">Total</div><div class="log-stat-val" style="color:var(--gold)">${totals.prod.toFixed(1)}h</div><div class="log-stat-sub">${schedLabel}</div></div>`;
+    const detail_entries=(entries||[]).map(e=>`
       <div class="log-stat">
         <div class="log-stat-lbl" style="color:${e.color}">${e.name}</div>
         <div class="log-stat-val">${e.done.toFixed(1)}<span style="font-size:13px;color:var(--muted)">/${e.planned}h</span></div>
-        <div class="log-stat-sub">${e.ticked ? '✓ Fully done' : Math.round((e.done/e.planned)*100)+'% done'}</div>
+        <div class="log-stat-sub">${e.ticked?'✓ Fully done':Math.round((e.done/e.planned)*100)+'% done'}</div>
       </div>`).join('');
-
     return `
     <div class="log-entry">
       <div class="log-entry-hdr" onclick="toggleLogEntry('${dateKey}')">
-        <div>
-          <div class="log-date">${dateLabel}<span>${schedLabel}</span> ${autoBadge}</div>
-        </div>
+        <div><div class="log-date">${dateLabel}<span>${schedLabel}</span> ${autoBadge}</div></div>
         <div class="log-pills">${pills}</div>
         <div class="log-chevron" id="chv-${dateKey}">▼</div>
       </div>
       <div class="log-detail" id="det-${dateKey}">
-        ${detail_stats}
-        ${detail_entries}
+        ${detail_stats}${detail_entries}
         <div class="log-stat" style="grid-column:1/-1;background:transparent;padding:0">
           <button class="log-del-btn" onclick="deleteLog('${dateKey}')">🗑 Delete this log entry</button>
         </div>
@@ -1069,136 +1065,83 @@ function renderLogs() {
 }
 
 /* ============================================================
-   RENDER: CUMULATIVE PAGE
+   RENDER: CUMULATIVE
    ============================================================ */
-function renderCumulative() {
-  const d = Math.max(cumData.days, 1);
-  document.getElementById('cum-grid').innerHTML = `
+function renderCumulative(){
+  const d=Math.max(cumData.days,1);
+  document.getElementById('cum-grid').innerHTML=`
     <div class="cum-card"><div class="cum-icon">📅</div><div class="cum-lbl">Days Tracked</div><div class="cum-val" style="color:var(--gold)">${cumData.days}</div><div class="cum-sub">Since 18 Jun 2026</div></div>
     <div class="cum-card"><div class="cum-icon">📖</div><div class="cum-lbl">Total UPSC Hours</div><div class="cum-val" style="color:var(--upsc)">${cumData.upsc.toFixed(1)}h</div><div class="cum-sub">Avg ${(cumData.upsc/d).toFixed(1)}h/day</div></div>
     <div class="cum-card"><div class="cum-icon">🔧</div><div class="cum-lbl">Total GATE Hours</div><div class="cum-val" style="color:var(--gate)">${cumData.gate.toFixed(1)}h</div><div class="cum-sub">Avg ${(cumData.gate/d).toFixed(1)}h/day</div></div>
     <div class="cum-card"><div class="cum-icon">🏫</div><div class="cum-lbl">IIIT Fellowship</div><div class="cum-val" style="color:var(--iiit)">${cumData.iiit.toFixed(1)}h</div><div class="cum-sub">Avg ${(cumData.iiit/d).toFixed(1)}h/day</div></div>
     <div class="cum-card"><div class="cum-icon">⚡</div><div class="cum-lbl">Total Productive</div><div class="cum-val" style="color:var(--gold)">${cumData.totalProd.toFixed(1)}h</div><div class="cum-sub">Avg ${(cumData.totalProd/d).toFixed(1)}h/day</div></div>
-    <div class="cum-card"><div class="cum-icon">📊</div><div class="cum-lbl">UPSC vs GATE Split</div><div class="cum-val" style="color:var(--text);font-size:18px">${cumData.totalProd > 0 ? Math.round((cumData.upsc/cumData.totalProd)*100) : 0}% / ${cumData.totalProd > 0 ? Math.round((cumData.gate/cumData.totalProd)*100) : 0}%</div><div class="cum-sub">UPSC / GATE of productive time</div></div>`;
+    <div class="cum-card"><div class="cum-icon">📊</div><div class="cum-lbl">UPSC vs GATE Split</div><div class="cum-val" style="color:var(--text);font-size:18px">${cumData.totalProd>0?Math.round((cumData.upsc/cumData.totalProd)*100):0}% / ${cumData.totalProd>0?Math.round((cumData.gate/cumData.totalProd)*100):0}%</div><div class="cum-sub">UPSC / GATE of productive time</div></div>`;
 }
 
 /* ============================================================
-   MASTER RENDERS
+   MASTER RENDER
    ============================================================ */
-function renderToday() {
-  renderSchedBanner();
-  renderTrackerRows();
-  renderGlance();
-  renderCircles();
-  renderBar();
-  updateAutologNotice();
-}
-function renderAll() {
-  renderDateHeader();
-  renderToday();
-  if (curPage === 'logs')   renderLogs();
-  if (curPage === 'totals') renderCumulative();
+function renderToday(){ renderSchedBanner(); renderTrackerRows(); renderGlance(); renderCircles(); renderBar(); updateAutologNotice(); }
+function renderAll(){
+  renderDateHeader(); renderToday();
+  if(curPage==='logs')renderLogs();
+  if(curPage==='totals')renderCumulative();
 }
 
 /* ============================================================
    INIT
    ============================================================ */
-(function init() {
-  const saved = loadState();  // { date, actState } or null
-
-  if (saved) {
-    if (saved.date === todayKey()) {
-      // Same day — restore ticks / partials
+(function init(){
+  const saved=loadState();
+  if(saved){
+    if(saved.date===todayKey()){
       initState(saved.actState);
     } else {
-      // New day opened — auto-log previous day if there was progress
-      const logged = autoLogIfNeeded(saved.date, saved.actState, 'stale');
-      if (logged) {
-        showToast(`Auto-logged ${saved.date} — opened on a new day ✓`);
-      }
-      try { localStorage.removeItem(LS_STATE); } catch(e){}
+      const logged=autoLogIfNeeded(saved.date,saved.actState,'stale');
+      if(logged)showToast(`Auto-logged ${saved.date} — welcome back ✓`,'var(--sleep)');
+      try{localStorage.removeItem(LS_STATE);}catch(e){}
       initState();
     }
-  } else {
-    initState();
-  }
+  } else { initState(); }
 
   renderAll();
 
-  /* ── SECOND-RESOLUTION CLOCK ── */
-  // Updates countdown every second; checks for day rollover every minute.
-  let _lastDateKey = todayKey();
-  let _tickCount   = 0;
-
-  setInterval(() => {
-    _tickCount++;
-
-    // Always update countdown display
+  let _lastDateKey=todayKey(), _tick=0;
+  setInterval(()=>{
+    _tick++;
     updateAutologNotice();
-
-    // Every 60 ticks (~60s): full date-change check + possible EOD auto-log
-    if (_tickCount % 60 === 0) {
-      renderDateHeader();
-      renderSchedBanner();
-
-      const nowKey = todayKey();
-
-      // ── Day rollover at midnight ──
-      if (nowKey !== _lastDateKey) {
-        // Auto-log yesterday via midnight rollover
-        const logged = autoLogIfNeeded(_lastDateKey, { ...actState }, 'midnight');
-        if (logged) {
-          showToast(`Midnight — auto-logged ${_lastDateKey} ✓`, 'var(--sleep)');
-        }
-        actState = {}; initState();
-        try { localStorage.removeItem(LS_STATE); } catch(e){}
-        _lastDateKey = nowKey;
-        renderAll();
-        return;
+    if(_tick%60===0){
+      renderDateHeader(); renderSchedBanner();
+      const nowKey=todayKey();
+      if(nowKey!==_lastDateKey){
+        const logged=autoLogIfNeeded(_lastDateKey,{...actState},'midnight');
+        if(logged)showToast(`Midnight — auto-logged ${_lastDateKey} ✓`,'var(--sleep)');
+        actState={}; initState();
+        try{localStorage.removeItem(LS_STATE);}catch(e){}
+        _lastDateKey=nowKey; renderAll(); return;
       }
-
-      // ── End-of-day timer (23:55) — fire 5 minutes before midnight ──
-      // This catches users who have the tab open but won't be around at midnight.
-      const now = new Date();
-      if (now.getHours() === 23 && now.getMinutes() === 55) {
-        const logged = autoLogIfNeeded(_lastDateKey, { ...actState }, 'eod');
-        if (logged) {
-          // Keep the tracker running (don't clear state) — midnight will handle the reset
-          showToast('⏱ 5 min to midnight — progress auto-saved ✓', 'var(--gold)');
-          renderAll();
-        }
+      const now=new Date();
+      if(now.getHours()===23&&now.getMinutes()===55){
+        const logged=autoLogIfNeeded(_lastDateKey,{...actState},'eod');
+        if(logged){showToast('⏱ 5 min to midnight — progress auto-saved ✓','var(--gold)');renderAll();}
       }
     }
-  }, 1000);
+  },1000);
 
-  /* ── VISIBILITY / FOCUS: catch tab re-opens on a new day ──
-     If the user leaves the tab open overnight, or wakes up their laptop,
-     visibilitychange fires before any interval tick. */
-  function checkDateOnFocus() {
-    const nowKey = todayKey();
-    if (nowKey !== _lastDateKey) {
-      // Auto-log the missed day
-      const logged = autoLogIfNeeded(_lastDateKey, { ...actState }, 'stale');
-      if (logged) {
-        showToast(`Auto-logged ${_lastDateKey} — welcome back ✓`, 'var(--sleep)');
-      }
-      actState = {}; initState();
-      try { localStorage.removeItem(LS_STATE); } catch(e){}
-      _lastDateKey = nowKey;
-      renderAll();
+  function checkDateOnFocus(){
+    const nowKey=todayKey();
+    if(nowKey!==_lastDateKey){
+      const logged=autoLogIfNeeded(_lastDateKey,{...actState},'stale');
+      if(logged)showToast(`Auto-logged ${_lastDateKey} — welcome back ✓`,'var(--sleep)');
+      actState={}; initState();
+      try{localStorage.removeItem(LS_STATE);}catch(e){}
+      _lastDateKey=nowKey; renderAll();
     }
   }
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') checkDateOnFocus();
-  });
-  window.addEventListener('focus', checkDateOnFocus);
-
-  /* ── Save state on page hide (belt-and-suspenders) ── */
-  window.addEventListener('pagehide', () => { saveState(); });
-  window.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') saveState();
-  });
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible')checkDateOnFocus(); });
+  window.addEventListener('focus',checkDateOnFocus);
+  window.addEventListener('pagehide',()=>saveState());
+  window.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden')saveState(); });
 })();
 </script>
 </body>
