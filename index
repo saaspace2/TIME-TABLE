@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Command Centre — UPSC · GATE · IIIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #0d0f14;
+  --surface: #141720;
+  --surf2:   #1c2030;
+  --border:  #252a3a;
+  --upsc:    #6c8fff;
+  --gate:    #ff7c5c;
+  --iiit:    #4fd9a0;
+  --sleep:   #a78bfa;
+  --rest:    #64748b;
+  --text:    #e8eaf0;
+  --muted:   #6b7280;
+  --gold:    #f59e0b;
+  --green:   #22c55e;
+  --red:     #ef4444;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; }
+
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(135deg,#141720,#1a1f30);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 32px 16px;
+  position: sticky; top: 0; z-index: 200;
+}
+.header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+.header h1 { font-size: 21px; font-weight: 700; letter-spacing: -.5px; }
+.header h1 span { color: var(--upsc); }
+.header-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.date-badge {
+  background: var(--surf2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px 14px; font-size: 12px; font-family: 'JetBrains Mono',monospace; text-align: right;
+}
+.date-badge strong { display: block; font-size: 14px; color: var(--gold); margin-bottom: 2px; }
+
+/* ── NAV TABS ── */
+.nav-tabs {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 32px; display: flex; gap: 0;
+}
+.nav-tab {
+  padding: 14px 20px; font-size: 13px; font-weight: 600; cursor: pointer;
+  border: none; background: none; font-family: inherit; color: var(--muted);
+  border-bottom: 2px solid transparent; transition: all .2s; white-space: nowrap;
+}
+.nav-tab.active { color: var(--text); border-bottom-color: var(--upsc); }
+.nav-tab:hover:not(.active) { color: var(--text); }
+
+/* ── SCHEDULE BANNER ── */
+.sched-banner {
+  padding: 12px 32px; border-bottom: 1px solid var(--border);
+  background: var(--surf2); display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.sched-pill {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 6px 14px; font-size: 12px;
+}
+.sched-pill .pdot { width: 7px; height: 7px; border-radius: 50%; }
+.sched-pill .plbl { color: var(--muted); margin-right: 3px; }
+.alt-chip {
+  margin-left: auto; display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 600;
+}
+.alt-chip .chip-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ── MAIN ── */
+.main { padding: 24px 32px; display: grid; gap: 20px; max-width: 1200px; margin: 0 auto; }
+.sec-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+/* ── TRACKER ── */
+.tracker-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.tracker-hdr {
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.tracker-hdr-l { font-size: 13px; font-weight: 600; }
+.tracker-hdr-l span { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: 6px; }
+.reset-btn {
+  font-size: 11px; color: var(--muted); background: none; border: 1px solid var(--border);
+  border-radius: 8px; padding: 5px 12px; cursor: pointer; font-family: inherit; transition: all .2s;
+}
+.reset-btn:hover { color: var(--red); border-color: var(--red); }
+
+.tr-row {
+  display: grid; grid-template-columns: 1fr 130px 48px;
+  align-items: center; padding: 13px 20px; border-bottom: 1px solid var(--border);
+  gap: 12px; transition: background .15s;
+}
+.tr-row:last-of-type { border-bottom: none; }
+.tr-row.done    { background: rgba(34,197,94,.06); }
+.tr-row.partial { background: rgba(245,158,11,.05); }
+.tr-row:hover   { background: var(--surf2); }
+.tr-row.done:hover { background: rgba(34,197,94,.09); }
+.tr-row.mand    { border-left: 3px solid var(--gate); }
+
+.act-info { display: flex; flex-direction: column; gap: 3px; }
+.act-name { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px; }
+.act-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.mand-tag {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px;
+  background: rgba(255,124,92,.15); color: var(--gate);
+  border: 1px solid rgba(255,124,92,.3); border-radius: 4px; padding: 1px 5px;
+}
+.act-stat { font-size: 11px; padding-left: 16px; font-weight: 600; }
+.mini-bar { height: 3px; background: var(--surf2); border-radius: 99px; overflow: hidden; margin-top: 3px; margin-left: 16px; max-width: 180px; }
+.mini-bar-fill { height: 100%; border-radius: 99px; transition: width .5s ease; }
+
+.act-ctrl { display: flex; align-items: center; gap: 6px; }
+.h-input {
+  width: 62px; background: var(--surf2); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px; padding: 7px 8px; font-size: 13px;
+  font-family: 'JetBrains Mono',monospace; outline: none; transition: border-color .2s; text-align: center;
+}
+.h-input:focus    { border-color: var(--upsc); }
+.h-input:disabled { opacity: .35; cursor: not-allowed; }
+.h-unit { font-size: 11px; color: var(--muted); }
+
+.tick-btn {
+  width: 40px; height: 40px; border-radius: 12px; border: 2px solid var(--border);
+  background: var(--surf2); cursor: pointer; display: flex; align-items: center;
+  justify-content: center; transition: all .2s; font-size: 18px; flex-shrink: 0; color: var(--muted);
+}
+.tick-btn:hover   { border-color: var(--green); background: rgba(34,197,94,.1); color: var(--green); }
+.tick-btn.ticked  { background: var(--green); border-color: var(--green); color: #fff; }
+.tick-btn.ticked:hover { background: #16a34a; border-color: #16a34a; }
+
+.tr-footer {
+  padding: 13px 20px; background: var(--surf2); border-top: 1px solid var(--border);
+  display: flex; gap: 24px; flex-wrap: wrap; align-items: center;
+}
+.ftr-stat { display: flex; flex-direction: column; gap: 2px; }
+.ftr-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .7px; font-weight: 600; }
+.ftr-val { font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono',monospace; }
+
+/* ── GLANCE CARDS ── */
+.cards-row { display: grid; grid-template-columns: repeat(auto-fit,minmax(148px,1fr)); gap: 12px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: 18px; position: relative; overflow: hidden; transition: border-color .2s;
+}
+.card::before { content:''; position: absolute; top:0;left:0;right:0; height:3px; background: var(--accent,var(--upsc)); }
+.card:hover { border-color: var(--accent,var(--upsc)); }
+.card-lbl  { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; font-weight: 600; margin-bottom: 8px; }
+.card-val  { font-size: 30px; font-weight: 700; font-family: 'JetBrains Mono',monospace; line-height: 1; color: var(--accent,var(--text)); }
+.card-unit { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+/* ── CIRCLES ── */
+.circles-row { display: grid; grid-template-columns: repeat(auto-fit,minmax(128px,1fr)); gap: 12px; }
+.circle-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 14px; display: flex; flex-direction: column; align-items: center; gap: 9px; }
+.circle-wrap { position: relative; width: 84px; height: 84px; }
+.circle-wrap svg { transform: rotate(-90deg); }
+.c-bg { fill: none; stroke: var(--surf2); stroke-width: 7; }
+.c-fg { fill: none; stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset .8s ease; }
+.c-inner { position: absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.c-pct  { font-size: 16px; font-weight: 700; font-family: 'JetBrains Mono',monospace; }
+.c-name { font-size: 12px; text-align: center; font-weight: 600; }
+.c-hrs  { font-size: 11px; color: var(--muted); }
+.c-tick { font-size: 12px; font-weight: 700; color: var(--green); }
+
+/* ── STACKED BAR ── */
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+.stk-bar { display: flex; height: 34px; border-radius: 10px; overflow: hidden; gap: 1px; }
+.stk-seg { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: rgba(255,255,255,.85); min-width: 0; overflow: hidden; white-space: nowrap; transition: flex .6s ease; }
+.legend  { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+.leg-item{ display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.leg-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+/* ── LOG BTN ── */
+.log-btn {
+  background: var(--green); color: #fff; border: none; border-radius: 10px;
+  padding: 10px 20px; font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: inherit; width: 100%; transition: opacity .2s, transform .1s;
+}
+.log-btn:hover  { opacity: .88; }
+.log-btn:active { transform: scale(.98); }
+
+/* ── CUMULATIVE GRID ── */
+.cum-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(170px,1fr)); gap: 12px; }
+.cum-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+.cum-icon { font-size: 22px; margin-bottom: 8px; }
+.cum-lbl  { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; font-weight: 600; }
+.cum-val  { font-size: 26px; font-weight: 700; font-family: 'JetBrains Mono',monospace; margin-top: 5px; line-height: 1; }
+.cum-sub  { font-size: 11px; color: var(--muted); margin-top: 7px; }
+
+/* ── DAY LOG VIEW ── */
+.log-view { padding: 24px 32px; max-width: 1200px; margin: 0 auto; }
+.log-view .sec-title { margin-bottom: 16px; }
+
+.log-list { display: grid; gap: 12px; }
+.log-entry {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+}
+.log-entry-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; cursor: pointer; transition: background .15s; gap: 12px; flex-wrap: wrap;
+}
+.log-entry-hdr:hover { background: var(--surf2); }
+.log-date { font-size: 14px; font-weight: 700; }
+.log-date span { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 8px; }
+.log-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.log-pill {
+  font-size: 11px; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; border: 1px solid; font-family: 'JetBrains Mono',monospace;
+}
+.log-chevron { color: var(--muted); font-size: 12px; transition: transform .2s; flex-shrink: 0; }
+.log-chevron.open { transform: rotate(180deg); }
+
+.log-detail {
+  border-top: 1px solid var(--border); padding: 16px 18px;
+  display: none; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 10px;
+}
+.log-detail.open { display: grid; }
+.log-stat { background: var(--surf2); border-radius: 10px; padding: 12px 14px; }
+.log-stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .7px; font-weight: 600; margin-bottom: 5px; }
+.log-stat-val { font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono',monospace; }
+.log-stat-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+.log-del-btn {
+  font-size: 11px; color: var(--muted); background: none; border: 1px solid var(--border);
+  border-radius: 7px; padding: 4px 10px; cursor: pointer; font-family: inherit; transition: all .2s;
+  margin-top: 10px;
+}
+.log-del-btn:hover { color: var(--red); border-color: var(--red); }
+
+.log-empty {
+  text-align: center; padding: 60px 24px; color: var(--muted); font-size: 14px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+}
+.log-empty span { font-size: 32px; display: block; margin-bottom: 12px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--surface); border: 1px solid var(--green);
+  color: var(--green); border-radius: 12px; padding: 12px 24px;
+  font-size: 13px; font-weight: 600; opacity: 0;
+  transition: opacity .3s, transform .3s; z-index: 999; white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── RESPONSIVE ── */
+@media (max-width:700px) {
+  .header, .sched-banner, .nav-tabs { padding-left: 16px; padding-right: 16px; }
+  .main, .log-view { padding: 16px; }
+  .tr-row { grid-template-columns: 1fr 96px 42px; gap: 8px; padding: 11px 14px; }
+  .h-input { width: 50px; }
+  .cards-row { grid-template-columns: 1fr 1fr; }
+  .circles-row { grid-template-columns: repeat(2,1fr); }
+  .nav-tab { padding: 12px 12px; font-size: 12px; }
+}
+@media (max-width:400px) {
+  .tr-row { grid-template-columns: 1fr 80px 38px; }
+  .h-input { width: 42px; font-size: 12px; }
+  .cards-row { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .c-fg, .mini-bar-fill, .stk-seg { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-top">
+    <div>
+      <h1>Study <span>Command Centre</span></h1>
+      <div class="header-sub">UPSC &nbsp;·&nbsp; GATE &nbsp;·&nbsp; IIIT Bangalore Fellowship</div>
+    </div>
+    <div class="date-badge">
+      <strong id="today-date">—</strong>
+      <span id="today-time">—</span>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<div class="nav-tabs">
+  <button class="nav-tab active" id="ntab-today"  onclick="showPage('today',  this)">📋 Today</button>
+  <button class="nav-tab"        id="ntab-logs"   onclick="showPage('logs',   this)">📅 Day Logs</button>
+  <button class="nav-tab"        id="ntab-totals" onclick="showPage('totals', this)">⚡ Cumulative</button>
+</div>
+
+<!-- SCHEDULE BANNER (only on today) -->
+<div class="sched-banner" id="sched-banner"></div>
+
+<!-- ===== PAGE: TODAY ===== -->
+<div id="page-today">
+<main class="main">
+
+  <section>
+    <div class="sec-title">Today's Activity Tracker</div>
+    <div class="tracker-card">
+      <div class="tracker-hdr">
+        <div class="tracker-hdr-l">Tick ✓ if fully done <span>— or enter hours completed</span></div>
+        <button class="reset-btn" onclick="resetTracker()">↺ Reset</button>
+      </div>
+      <div id="tr-rows"></div>
+      <div class="tr-footer" id="tr-footer"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title">Today at a Glance</div>
+    <div class="cards-row">
+      <div class="card" style="--accent:var(--gold)">
+        <div class="card-lbl">Planned Productive</div>
+        <div class="card-val" id="c-planned">—</div>
+        <div class="card-unit">hours today</div>
+      </div>
+      <div class="card" style="--accent:var(--green)">
+        <div class="card-lbl">Completed</div>
+        <div class="card-val" id="c-done">0</div>
+        <div class="card-unit">hours done</div>
+      </div>
+      <div class="card" style="--accent:var(--gate)">
+        <div class="card-lbl">Remaining</div>
+        <div class="card-val" id="c-remain">—</div>
+        <div class="card-unit">hours to go</div>
+      </div>
+      <div class="card" style="--accent:var(--upsc)">
+        <div class="card-lbl">Productivity</div>
+        <div class="card-val" id="c-pct">0%</div>
+        <div class="card-unit">of today's plan</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title">Subject Progress — Today</div>
+    <div class="circles-row" id="circles-row"></div>
+  </section>
+
+  <section>
+    <div class="chart-card">
+      <div class="sec-title" style="margin-bottom:10px">24-Hour Day Breakdown</div>
+      <div class="stk-bar" id="stk-bar"></div>
+      <div class="legend" id="bar-legend"></div>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<!-- ===== PAGE: DAY LOGS ===== -->
+<div id="page-logs" style="display:none">
+  <div class="log-view">
+    <div class="sec-title">Day-by-Day Log</div>
+    <div class="log-list" id="log-list"></div>
+  </div>
+</div>
+
+<!-- ===== PAGE: CUMULATIVE ===== -->
+<div id="page-totals" style="display:none">
+  <div class="log-view">
+    <div class="sec-title">Cumulative Totals — Since 18 June 2026</div>
+    <div class="cum-grid" id="cum-grid"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   SCHEDULE DEFINITIONS
+   ============================================================ */
+const SCHED_WD_GATE = {
+  id: 'weekday-gate', label: 'Weekday — GATE Evening',
+  rows: [
+    { name:'Sleep',                    hours:5,  color:'var(--sleep)', key:'sleep', productive:false },
+    { name:'UPSC (News, CA, GS)',       hours:4,  color:'var(--upsc)',  key:'upsc',  productive:true  },
+    { name:'IIIT Bangalore Fellowship', hours:10, color:'var(--iiit)',  key:'iiit',  productive:true  },
+    { name:'GATE Evening Study',        hours:5,  color:'var(--gate)',  key:'gate',  productive:true  },
+  ],
+  totalProd:19, totalSched:24
+};
+const SCHED_WD_UPSC = {
+  id: 'weekday-upsc', label: 'Weekday — UPSC Evening',
+  rows: [
+    { name:'Sleep',                    hours:5,  color:'var(--sleep)', key:'sleep',  productive:false },
+    { name:'UPSC Morning (News,CA,GS)', hours:4,  color:'var(--upsc)',  key:'upsc',   productive:true  },
+    { name:'IIIT Bangalore Fellowship', hours:10, color:'var(--iiit)',  key:'iiit',   productive:true  },
+    { name:'UPSC Evening Study',        hours:5,  color:'var(--upsc)',  key:'upsc2',  productive:true  },
+  ],
+  totalProd:19, totalSched:24
+};
+const SCHED_WE = {
+  id: 'weekend', label: 'Weekend',
+  rows: [
+    { name:'Sleep',                    hours:5,  color:'var(--sleep)', key:'sleep', productive:false },
+    { name:'Nap / Rest',               hours:2,  color:'var(--rest)',  key:'rest',  productive:false },
+    { name:'GATE (Mandatory 3h)',       hours:3,  color:'var(--gate)',  key:'gate',  productive:true,  mandatory:true },
+    { name:'UPSC',                     hours:14, color:'var(--upsc)',  key:'upsc',  productive:true  },
+    { name:'IIIT Bangalore Fellowship', hours:0,  color:'var(--iiit)',  key:'iiit',  productive:true  },
+  ],
+  totalProd:17, totalSched:24, totalRest:7
+};
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let curPage = 'today';
+let actState = {};   // { key: { ticked, partial } }
+
+/* ============================================================
+   ALTERNATING LOGIC
+   Weekdays alternate automatically: Mon=GATE, Tue=UPSC, Wed=GATE, Thu=UPSC, Fri=GATE
+   (Mon=1,Tue=2,Wed=3,Thu=4,Fri=5 → odd=GATE, even=UPSC)
+   ============================================================ */
+function isWeekend(d) {
+  const day = (d || new Date()).getDay();
+  return day === 0 || day === 6;
+}
+
+function scheduleForDate(d) {
+  const date = d || new Date();
+  if (isWeekend(date)) return SCHED_WE;
+  const dow = date.getDay(); // 1=Mon…5=Fri
+  return (dow % 2 === 1) ? SCHED_WD_GATE : SCHED_WD_UPSC;
+}
+
+function currentSched() { return scheduleForDate(new Date()); }
+
+/* ============================================================
+   PERSISTENCE — localStorage keys
+   ============================================================ */
+const LS_CUM  = 'scc_v5_cum';
+const LS_LOGS = 'scc_v5_logs';
+
+function loadCum() {
+  try { const r = localStorage.getItem(LS_CUM); if(r) return JSON.parse(r); } catch(e){}
+  return { upsc:0, gate:0, iiit:0, totalProd:0, days:0 };
+}
+function saveCum(c) { try { localStorage.setItem(LS_CUM, JSON.stringify(c)); } catch(e){} }
+
+// logs: array of { dateKey, dateLabel, schedId, schedLabel, entries:[{key,name,planned,done,ticked}], totals:{upsc,gate,iiit,prod}, note }
+function loadLogs() {
+  try { const r = localStorage.getItem(LS_LOGS); if(r) return JSON.parse(r); } catch(e){}
+  return [];
+}
+function saveLogs(logs) { try { localStorage.setItem(LS_LOGS, JSON.stringify(logs)); } catch(e){} }
+
+let cumData = loadCum();
+let dayLogs = loadLogs();
+
+/* ============================================================
+   STATE HELPERS
+   ============================================================ */
+function initState() {
+  const prev = actState;
+  actState = {};
+  currentSched().rows.forEach(r => {
+    actState[r.key] = prev[r.key] ? prev[r.key] : { ticked:false, partial:null };
+  });
+}
+
+function getDone(row) {
+  const s = actState[row.key];
+  if (!s) return 0;
+  if (s.ticked) return row.hours;
+  if (s.partial !== null) return Math.min(s.partial, row.hours);
+  return 0;
+}
+
+function toggleTick(key) {
+  actState[key].ticked = !actState[key].ticked;
+  if (actState[key].ticked) actState[key].partial = null;
+  renderToday();
+}
+function onPartial(key, val) {
+  const p = parseFloat(val);
+  actState[key].partial = isNaN(p) ? null : Math.max(0, p);
+  if (!isNaN(p) && p > 0) actState[key].ticked = false;
+  renderToday();
+}
+function resetTracker() { actState={}; initState(); renderToday(); showToast('Tracker reset'); }
+
+/* ============================================================
+   LOG TODAY
+   ============================================================ */
+function logToday() {
+  const sched = currentSched();
+  const now   = new Date();
+  const dateKey = now.toISOString().slice(0,10);
+
+  // Check not already logged today
+  if (dayLogs.find(l => l.dateKey === dateKey)) {
+    showToast('Today already logged — delete it first to re-log');
+    return;
+  }
+
+  const entries = sched.rows.filter(r => r.productive && r.hours > 0).map(r => ({
+    key: r.key, name: r.name, color: r.color,
+    planned: r.hours, done: getDone(r), ticked: actState[r.key]?.ticked || false
+  }));
+
+  let upscH = 0, gateH = 0, iiitH = 0;
+  entries.forEach(e => {
+    if (e.key === 'upsc' || e.key === 'upsc2') upscH += e.done;
+    if (e.key === 'gate') gateH += e.done;
+    if (e.key === 'iiit') iiitH += e.done;
+  });
+  const prodH = upscH + gateH + iiitH;
+
+  const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dateLabel = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+  dayLogs.unshift({
+    dateKey, dateLabel, schedId: sched.id, schedLabel: sched.label,
+    entries, totals: { upsc:upscH, gate:gateH, iiit:iiitH, prod:prodH }
+  });
+  saveLogs(dayLogs);
+
+  // Update cumulative
+  cumData.upsc      += upscH;
+  cumData.gate      += gateH;
+  cumData.iiit      += iiitH;
+  cumData.totalProd += prodH;
+  cumData.days      += 1;
+  saveCum(cumData);
+
+  // Reset tracker
+  actState = {}; initState();
+  renderAll();
+  showToast(`Day logged ✓  —  ${prodH.toFixed(1)}h productive`);
+}
+
+function deleteLog(dateKey) {
+  const idx = dayLogs.findIndex(l => l.dateKey === dateKey);
+  if (idx === -1) return;
+  const log = dayLogs[idx];
+  // Subtract from cumulative
+  cumData.upsc      -= log.totals.upsc;
+  cumData.gate      -= log.totals.gate;
+  cumData.iiit      -= log.totals.iiit;
+  cumData.totalProd -= log.totals.prod;
+  cumData.days      -= 1;
+  if (cumData.days < 0) cumData.days = 0;
+  saveCum(cumData);
+  dayLogs.splice(idx,1);
+  saveLogs(dayLogs);
+  renderAll();
+  showToast('Log entry deleted');
+}
+
+/* ============================================================
+   PAGE SWITCHING
+   ============================================================ */
+function showPage(page, btn) {
+  curPage = page;
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('page-today').style.display  = page==='today'  ? '' : 'none';
+  document.getElementById('page-logs').style.display   = page==='logs'   ? '' : 'none';
+  document.getElementById('page-totals').style.display = page==='totals' ? '' : 'none';
+  document.getElementById('sched-banner').style.display = page==='today' ? '' : 'none';
+  if (page==='logs')   renderLogs();
+  if (page==='totals') renderCumulative();
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ============================================================
+   RENDER: DATE HEADER
+   ============================================================ */
+function renderDateHeader() {
+  const now    = new Date();
+  const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('today-date').textContent =
+    `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const h = now.getHours();
+  document.getElementById('today-time').textContent =
+    h < 12 ? '☀️ Morning' : h < 17 ? '🌤 Afternoon' : '🌙 Evening';
+}
+
+/* ============================================================
+   RENDER: SCHEDULE BANNER
+   ============================================================ */
+function renderSchedBanner() {
+  const sched = currentSched();
+  const dow   = new Date().getDay();
+  const isWE  = isWeekend();
+
+  let eveInfo = '';
+  if (!isWE) {
+    const eveType = (dow % 2 === 1) ? 'GATE' : 'UPSC';
+    const eveColor = eveType === 'GATE' ? 'var(--gate)' : 'var(--upsc)';
+    const nextDow  = dow === 5 ? null : dow + 1;
+    const nextEve  = nextDow ? ((nextDow % 2 === 1) ? 'GATE' : 'UPSC') : 'Weekend';
+    eveInfo = `
+      <div class="alt-chip">
+        <span class="chip-dot" style="background:${eveColor}"></span>
+        Evening: <strong style="color:${eveColor};margin-left:4px">${eveType}</strong>
+        <span style="color:var(--muted);font-weight:400;margin-left:8px">· Next: ${nextEve}</span>
+      </div>`;
+  } else {
+    eveInfo = `
+      <div class="alt-chip" style="border-color:rgba(108,143,255,.3);color:var(--upsc)">
+        🔒 GATE 3h fixed &nbsp;·&nbsp; <span style="color:var(--muted)">Rest = UPSC</span>
+      </div>`;
+  }
+
+  document.getElementById('sched-banner').innerHTML = `
+    <div class="sched-pill">
+      <div class="pdot" style="background:${isWE ? 'var(--upsc)' : 'var(--iiit)'}"></div>
+      <span class="plbl">Schedule:</span>
+      <span>${sched.label}</span>
+    </div>
+    <div class="sched-pill">
+      <div class="pdot" style="background:var(--gold)"></div>
+      <span class="plbl">Productive goal:</span>
+      <span>${sched.totalProd}h</span>
+    </div>
+    ${eveInfo}`;
+}
+
+/* ============================================================
+   RENDER: TRACKER ROWS
+   ============================================================ */
+function renderTrackerRows() {
+  const sched = currentSched();
+
+  const html = sched.rows.map(row => {
+    const s      = actState[row.key] || { ticked:false, partial:null };
+    const done   = getDone(row);
+    const pct    = row.hours > 0 ? Math.min(100, Math.round((done/row.hours)*100)) : 0;
+    const isTick = s.ticked;
+    const isPart = !isTick && done > 0;
+    const cls    = isTick ? 'done' : isPart ? 'partial' : '';
+    const mCls   = row.mandatory ? 'mand' : '';
+
+    let stxt  = row.hours > 0 ? `Planned: ${row.hours}h` : 'Not scheduled today';
+    let sclr  = 'var(--muted)';
+    if (isTick)  { stxt = '✓ Fully completed';                    sclr = 'var(--green)'; }
+    else if (isPart) { stxt = `${done}h of ${row.hours}h done`;   sclr = 'var(--gold)'; }
+
+    const disabled = isTick || row.hours === 0;
+    const inpVal   = s.partial !== null ? s.partial : '';
+
+    return `
+    <div class="tr-row ${cls} ${mCls}">
+      <div class="act-info">
+        <div class="act-name">
+          <span class="act-dot" style="background:${row.color}"></span>
+          ${row.name}
+          ${row.mandatory ? '<span class="mand-tag">mandatory</span>' : ''}
+        </div>
+        <div class="act-stat" style="color:${sclr}">${stxt}</div>
+        ${row.hours > 0 ? `<div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%;background:${row.color}"></div></div>` : ''}
+      </div>
+      <div class="act-ctrl">
+        <input class="h-input" type="number" min="0" max="${row.hours||24}" step="0.5"
+          value="${inpVal}" placeholder="${row.hours}h"
+          ${disabled ? 'disabled' : ''}
+          oninput="onPartial('${row.key}',this.value)">
+        <span class="h-unit">h</span>
+      </div>
+      <button class="tick-btn ${isTick?'ticked':''}"
+        onclick="toggleTick('${row.key}')"
+        ${row.hours===0 ? 'disabled style="opacity:.3;cursor:not-allowed"' : ''}>
+        ${isTick ? '✓' : '○'}
+      </button>
+    </div>`;
+  }).join('');
+
+  document.getElementById('tr-rows').innerHTML = html;
+
+  // Footer
+  const prodDone  = sched.rows.filter(r=>r.productive).reduce((s,r)=>s+getDone(r), 0);
+  const tickCount = sched.rows.filter(r=>actState[r.key]?.ticked).length;
+  const total     = sched.rows.length;
+  const pctProd   = sched.totalProd > 0 ? Math.min(100,Math.round((prodDone/sched.totalProd)*100)) : 0;
+
+  document.getElementById('tr-footer').innerHTML = `
+    <div class="ftr-stat">
+      <div class="ftr-lbl">Ticked Off</div>
+      <div class="ftr-val" style="color:var(--green)">${tickCount}/${total}</div>
+    </div>
+    <div class="ftr-stat">
+      <div class="ftr-lbl">Productive Done</div>
+      <div class="ftr-val" style="color:var(--gold)">${prodDone.toFixed(1)}h</div>
+    </div>
+    <div class="ftr-stat">
+      <div class="ftr-lbl">vs Plan</div>
+      <div class="ftr-val" style="color:var(--upsc)">${pctProd}%</div>
+    </div>
+    <div style="margin-left:auto;align-self:center">
+      <button class="log-btn" style="width:auto;padding:10px 22px" onclick="logToday()">
+        ✓ Log Day
+      </button>
+    </div>`;
+}
+
+/* ============================================================
+   RENDER: GLANCE CARDS
+   ============================================================ */
+function renderGlance() {
+  const sched = currentSched();
+  const done  = sched.rows.filter(r=>r.productive).reduce((s,r)=>s+getDone(r), 0);
+  const plan  = sched.totalProd;
+  const rem   = Math.max(0, plan - done);
+  const pct   = plan > 0 ? Math.min(100,Math.round((done/plan)*100)) : 0;
+  document.getElementById('c-planned').textContent = plan;
+  document.getElementById('c-done').textContent    = done.toFixed(1).replace('.0','');
+  document.getElementById('c-remain').textContent  = rem.toFixed(1).replace('.0','');
+  document.getElementById('c-pct').textContent     = pct + '%';
+}
+
+/* ============================================================
+   RENDER: CIRCLES
+   ============================================================ */
+function circleSVG(pct, color) {
+  const r=35, circ=2*Math.PI*r, off=circ-(pct/100)*circ;
+  return `<svg width="84" height="84" viewBox="0 0 84 84">
+    <circle class="c-bg" cx="42" cy="42" r="${r}"/>
+    <circle class="c-fg" cx="42" cy="42" r="${r}" stroke="${color}"
+      stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"/>
+  </svg>`;
+}
+
+function renderCircles() {
+  const sched = currentSched();
+  const subjects = [
+    { key:'upsc',  label:'UPSC Morning', color:'var(--upsc)' },
+    { key:'upsc2', label:'UPSC Evening', color:'var(--upsc)' },
+    { key:'gate',  label:'GATE',         color:'var(--gate)' },
+    { key:'iiit',  label:'IIIT',         color:'var(--iiit)' },
+  ].filter(s => {
+    const row = sched.rows.find(r=>r.key===s.key);
+    return row && row.hours > 0;
+  });
+
+  const prodDone = sched.rows.filter(r=>r.productive).reduce((s,r)=>s+getDone(r), 0);
+  const totalPct = Math.min(100,Math.round((prodDone/sched.totalProd)*100));
+
+  const html = subjects.map(s => {
+    const row   = sched.rows.find(r=>r.key===s.key);
+    const done  = getDone(row);
+    const pct   = Math.min(100,Math.round((done/row.hours)*100));
+    const tick  = actState[s.key]?.ticked;
+    return `
+    <div class="circle-card">
+      <div class="circle-wrap">
+        ${circleSVG(pct, s.color)}
+        <div class="c-inner"><span class="c-pct" style="color:${s.color}">${pct}%</span></div>
+      </div>
+      <div class="c-name" style="color:${s.color}">${s.label}</div>
+      ${tick ? '<div class="c-tick">✓ Done</div>' : `<div class="c-hrs">${done}h / ${row.hours}h</div>`}
+    </div>`;
+  }).join('');
+
+  const overall = `
+  <div class="circle-card">
+    <div class="circle-wrap">
+      ${circleSVG(totalPct,'#f59e0b')}
+      <div class="c-inner"><span class="c-pct" style="color:var(--gold)">${totalPct}%</span></div>
+    </div>
+    <div class="c-name" style="color:var(--gold)">Overall</div>
+    <div class="c-hrs">${prodDone.toFixed(1)}h / ${sched.totalProd}h</div>
+  </div>`;
+
+  document.getElementById('circles-row').innerHTML = html + overall;
+}
+
+/* ============================================================
+   RENDER: STACKED BAR
+   ============================================================ */
+function renderBar() {
+  const sched = currentSched();
+  const bar = sched.rows.filter(r=>r.hours>0).map(r => {
+    const pct = (r.hours/24)*100;
+    return `<div class="stk-seg" style="flex:${r.hours};background:${r.color}" title="${r.name}: ${r.hours}h">
+      ${pct>8 ? r.hours+'h' : ''}
+    </div>`;
+  }).join('');
+  const legend = sched.rows.filter(r=>r.hours>0).map(r =>
+    `<div class="leg-item"><div class="leg-dot" style="background:${r.color}"></div>${r.name} (${r.hours}h)</div>`
+  ).join('');
+  document.getElementById('stk-bar').innerHTML    = bar;
+  document.getElementById('bar-legend').innerHTML = legend;
+}
+
+/* ============================================================
+   RENDER: DAY LOGS PAGE
+   ============================================================ */
+function toggleLogEntry(dateKey) {
+  const det = document.getElementById('det-' + dateKey);
+  const chv = document.getElementById('chv-' + dateKey);
+  if (!det) return;
+  const isOpen = det.classList.toggle('open');
+  chv.classList.toggle('open', isOpen);
+}
+
+function renderLogs() {
+  const container = document.getElementById('log-list');
+  if (!dayLogs.length) {
+    container.innerHTML = `<div class="log-empty"><span>📭</span>No days logged yet.<br>Complete today's tracker and hit "Log Day" to save your first entry.</div>`;
+    return;
+  }
+
+  container.innerHTML = dayLogs.map(log => {
+    const { dateKey, dateLabel, schedLabel, entries, totals } = log;
+    const pct = totals.prod > 0 ? Math.round((totals.prod / (currentSched().totalProd || 19)) * 100) : 0;
+
+    const pills = [
+      totals.upsc > 0 ? `<span class="log-pill" style="color:var(--upsc);border-color:rgba(108,143,255,.35);background:rgba(108,143,255,.08)">${totals.upsc.toFixed(1)}h UPSC</span>` : '',
+      totals.gate > 0 ? `<span class="log-pill" style="color:var(--gate);border-color:rgba(255,124,92,.35);background:rgba(255,124,92,.08)">${totals.gate.toFixed(1)}h GATE</span>` : '',
+      totals.iiit > 0 ? `<span class="log-pill" style="color:var(--iiit);border-color:rgba(79,217,160,.35);background:rgba(79,217,160,.08)">${totals.iiit.toFixed(1)}h IIIT</span>` : '',
+      `<span class="log-pill" style="color:var(--gold);border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.08)">${totals.prod.toFixed(1)}h total</span>`,
+    ].filter(Boolean).join('');
+
+    const detail_stats = `
+      <div class="log-stat">
+        <div class="log-stat-lbl">UPSC</div>
+        <div class="log-stat-val" style="color:var(--upsc)">${totals.upsc.toFixed(1)}h</div>
+        <div class="log-stat-sub">hours completed</div>
+      </div>
+      <div class="log-stat">
+        <div class="log-stat-lbl">GATE</div>
+        <div class="log-stat-val" style="color:var(--gate)">${totals.gate.toFixed(1)}h</div>
+        <div class="log-stat-sub">hours completed</div>
+      </div>
+      <div class="log-stat">
+        <div class="log-stat-lbl">IIIT</div>
+        <div class="log-stat-val" style="color:var(--iiit)">${totals.iiit.toFixed(1)}h</div>
+        <div class="log-stat-sub">hours completed</div>
+      </div>
+      <div class="log-stat">
+        <div class="log-stat-lbl">Total Productive</div>
+        <div class="log-stat-val" style="color:var(--gold)">${totals.prod.toFixed(1)}h</div>
+        <div class="log-stat-sub">schedule: ${schedLabel}</div>
+      </div>`;
+
+    const detail_entries = entries.map(e => `
+      <div class="log-stat">
+        <div class="log-stat-lbl" style="color:${e.color}">${e.name}</div>
+        <div class="log-stat-val">${e.done.toFixed(1)}<span style="font-size:13px;color:var(--muted)">/${e.planned}h</span></div>
+        <div class="log-stat-sub">${e.ticked ? '✓ Fully done' : Math.round((e.done/e.planned)*100)+'% done'}</div>
+      </div>`).join('');
+
+    return `
+    <div class="log-entry">
+      <div class="log-entry-hdr" onclick="toggleLogEntry('${dateKey}')">
+        <div>
+          <div class="log-date">${dateLabel}<span>${schedLabel}</span></div>
+        </div>
+        <div class="log-pills">${pills}</div>
+        <div class="log-chevron" id="chv-${dateKey}">▼</div>
+      </div>
+      <div class="log-detail" id="det-${dateKey}">
+        ${detail_stats}
+        ${detail_entries}
+        <div class="log-stat" style="grid-column:1/-1;background:transparent;padding:0">
+          <button class="log-del-btn" onclick="deleteLog('${dateKey}')">🗑 Delete this log entry</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   RENDER: CUMULATIVE PAGE
+   ============================================================ */
+function renderCumulative() {
+  const d = Math.max(cumData.days, 1);
+  document.getElementById('cum-grid').innerHTML = `
+    <div class="cum-card">
+      <div class="cum-icon">📅</div>
+      <div class="cum-lbl">Days Tracked</div>
+      <div class="cum-val" style="color:var(--gold)">${cumData.days}</div>
+      <div class="cum-sub">Since 18 Jun 2026</div>
+    </div>
+    <div class="cum-card">
+      <div class="cum-icon">📖</div>
+      <div class="cum-lbl">Total UPSC Hours</div>
+      <div class="cum-val" style="color:var(--upsc)">${cumData.upsc.toFixed(1)}h</div>
+      <div class="cum-sub">Avg ${(cumData.upsc/d).toFixed(1)}h/day</div>
+    </div>
+    <div class="cum-card">
+      <div class="cum-icon">🔧</div>
+      <div class="cum-lbl">Total GATE Hours</div>
+      <div class="cum-val" style="color:var(--gate)">${cumData.gate.toFixed(1)}h</div>
+      <div class="cum-sub">Avg ${(cumData.gate/d).toFixed(1)}h/day</div>
+    </div>
+    <div class="cum-card">
+      <div class="cum-icon">🏫</div>
+      <div class="cum-lbl">IIIT Fellowship</div>
+      <div class="cum-val" style="color:var(--iiit)">${cumData.iiit.toFixed(1)}h</div>
+      <div class="cum-sub">Avg ${(cumData.iiit/d).toFixed(1)}h/day</div>
+    </div>
+    <div class="cum-card">
+      <div class="cum-icon">⚡</div>
+      <div class="cum-lbl">Total Productive</div>
+      <div class="cum-val" style="color:var(--gold)">${cumData.totalProd.toFixed(1)}h</div>
+      <div class="cum-sub">Avg ${(cumData.totalProd/d).toFixed(1)}h/day</div>
+    </div>
+    <div class="cum-card">
+      <div class="cum-icon">📊</div>
+      <div class="cum-lbl">UPSC vs GATE Split</div>
+      <div class="cum-val" style="color:var(--text);font-size:18px">${cumData.totalProd > 0 ? Math.round((cumData.upsc/cumData.totalProd)*100) : 0}% / ${cumData.totalProd > 0 ? Math.round((cumData.gate/cumData.totalProd)*100) : 0}%</div>
+      <div class="cum-sub">UPSC / GATE of productive time</div>
+    </div>`;
+}
+
+/* ============================================================
+   MASTER RENDERS
+   ============================================================ */
+function renderToday() {
+  renderSchedBanner();
+  renderTrackerRows();
+  renderGlance();
+  renderCircles();
+  renderBar();
+}
+function renderAll() {
+  renderDateHeader();
+  renderToday();
+  if (curPage === 'logs')   renderLogs();
+  if (curPage === 'totals') renderCumulative();
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+(function init() {
+  initState();
+  renderAll();
+  // Auto-refresh date/banner each minute
+  setInterval(() => { renderDateHeader(); renderSchedBanner(); }, 60000);
+})();
+</script>
+</body>
+</html>
