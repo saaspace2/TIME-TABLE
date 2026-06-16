@@ -439,8 +439,9 @@ function currentSched() { return scheduleForDate(new Date()); }
 /* ============================================================
    PERSISTENCE — localStorage keys
    ============================================================ */
-const LS_CUM  = 'scc_v5_cum';
-const LS_LOGS = 'scc_v5_logs';
+const LS_CUM   = 'scc_v5_cum';
+const LS_LOGS  = 'scc_v5_logs';
+const LS_STATE = 'scc_v5_state'; // { date: 'YYYY-MM-DD', actState: {...} }
 
 function loadCum() {
   try { const r = localStorage.getItem(LS_CUM); if(r) return JSON.parse(r); } catch(e){}
@@ -455,17 +456,32 @@ function loadLogs() {
 }
 function saveLogs(logs) { try { localStorage.setItem(LS_LOGS, JSON.stringify(logs)); } catch(e){} }
 
+function todayKey() { return new Date().toISOString().slice(0,10); }
+function saveState() {
+  try { localStorage.setItem(LS_STATE, JSON.stringify({ date: todayKey(), actState })); } catch(e){}
+}
+function loadState() {
+  try {
+    const r = localStorage.getItem(LS_STATE);
+    if (!r) return null;
+    const parsed = JSON.parse(r);
+    if (parsed.date === todayKey()) return parsed.actState;
+    localStorage.removeItem(LS_STATE); // stale — different day, wipe it
+  } catch(e){}
+  return null;
+}
+
 let cumData = loadCum();
 let dayLogs = loadLogs();
 
 /* ============================================================
    STATE HELPERS
    ============================================================ */
-function initState() {
-  const prev = actState;
+function initState(fromSaved) {
+  const prev = fromSaved || actState;
   actState = {};
   currentSched().rows.forEach(r => {
-    actState[r.key] = prev[r.key] ? prev[r.key] : { ticked:false, partial:null };
+    actState[r.key] = prev[r.key] ? { ...prev[r.key] } : { ticked:false, partial:null };
   });
 }
 
@@ -480,15 +496,23 @@ function getDone(row) {
 function toggleTick(key) {
   actState[key].ticked = !actState[key].ticked;
   if (actState[key].ticked) actState[key].partial = null;
+  saveState();
   renderToday();
 }
 function onPartial(key, val) {
   const p = parseFloat(val);
   actState[key].partial = isNaN(p) ? null : Math.max(0, p);
   if (!isNaN(p) && p > 0) actState[key].ticked = false;
+  saveState();
   renderToday();
 }
-function resetTracker() { actState={}; initState(); renderToday(); showToast('Tracker reset'); }
+function resetTracker() {
+  actState = {};
+  initState();
+  try { localStorage.removeItem(LS_STATE); } catch(e){}
+  renderToday();
+  showToast('Tracker reset');
+}
 
 /* ============================================================
    LOG TODAY
@@ -537,6 +561,7 @@ function logToday() {
 
   // Reset tracker
   actState = {}; initState();
+  try { localStorage.removeItem(LS_STATE); } catch(e){}
   renderAll();
   showToast(`Day logged ✓  —  ${prodH.toFixed(1)}h productive`);
 }
@@ -947,7 +972,8 @@ function renderAll() {
    INIT
    ============================================================ */
 (function init() {
-  initState();
+  const saved = loadState();
+  initState(saved); // restores today's ticks/partials if same day, else fresh
   renderAll();
   // Auto-refresh date/banner each minute
   setInterval(() => { renderDateHeader(); renderSchedBanner(); }, 60000);
